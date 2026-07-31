@@ -5,5 +5,5 @@
    # ["gold_standard","summary","toy_xml_test","MP_specific_gs"]
     which_sim_test = "fuzzy"
     fuzzy_search = [5,2]
-    which_house = "house"
-    which_tests = ["gold_standard","MP_specific_gs","toy_xml_test","summary"]
+    which_tests=["summary"]
+#    which_tests = ["gold_standard","MP_specific_gs","toy_xml_test","summary"]

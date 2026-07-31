@@ -55,9 +55,8 @@ function test_input_setup()
     skip_cols = @. Symbol(test_params["SKIP_COLS"])
     which_sim_test = Symbol(test_params["WHICH_SIM_TEST"])
     fuzzy_search = test_params["FUZZY_SEARCH"]
-    which_house = test_params["WHICH_HOUSE"]
     which_tests = test_params["WHICH_TESTS"]
-    return skip_cols, which_sim_test, fuzzy_search, which_house, which_tests
+    return skip_cols, which_sim_test, fuzzy_search, which_tests
 end
 
 function find_date(str)
@@ -140,86 +139,14 @@ end
 
 
 @testset verbose = true "Entire set" begin
-    skip_cols, which_sim_test, fuzzy_search, which_house, which_tests = test_input_setup()
-    inputpaths, outputpath, toml = setup(which_house)
-    needs_outputpath = ("gold_standard" ∈ which_tests) || ("summary" ∈ which_tests)
-    if needs_outputpath
-        outputpath = ensure_decompressed(outputpath)
-    end
-    input_scratch_dirs = []
-    if "summary" ∈ which_tests
-        decompressed_inputpaths = []
-        for inputpath in inputpaths
-            input_scratch_dir = ensure_decompressed(dirname(inputpath))
-            push!(input_scratch_dirs, input_scratch_dir)
-            push!(decompressed_inputpaths, joinpath(input_scratch_dir, basename(inputpath)))
-        end
-    end
-    try
-    #gold standard
-    if "gold_standard" ∈ which_tests
-        @test begin
-            print("Gold standard test running ...")
-            test_output_path = joinpath([@__DIR__, "test_outputs", "gs_outputs", "$which_house"])
-            mkpath(test_output_path)
-
-            test_setup = test_struct(skip_cols, which_sim_test, fuzzy_search, toml, which_house)
-            gold_standard_path = joinpath([@__DIR__, "gold_standard", "$which_house"])
-            clean_gs_files(gold_standard_path)
-            gold_standard_csvs = get_all_csvnames(gold_standard_path)
-            test_output_path_csv = joinpath(test_output_path, "CSVs")
-            mkpath(test_output_path_csv)
-
-            if true
-                compare_gold_standard(outputpath, @__DIR__, test_setup, test_output_path_csv, gold_standard_csvs)
-            end
-
-            if "MP_specific_gs" ∈ which_tests
-                print("Gold standard MP-specific test running ...")
-                dates = all_GS_dates(gold_standard_csvs)
-                date_to_list = MPs_not_perfect(dates, test_output_path_csv)
-                date_to_impfct_namedict = Date_to_ImpftDict(date_to_list)
-                date_to_namedict = Date_to_Dict(gold_standard_csvs)
-                for (date, dict) in date_to_impfct_namedict
-                    names = []
-                    ratios = []
-                    wrongs = []
-                    totals = []
-                    date_test_output_path = joinpath(test_output_path, date)
-                    mkpath(date_test_output_path)
-                    name_to_total = date_to_namedict[date]
-                    for (id, count) in name_to_total
-                        name = id
-                        wrong = get(dict, id, "N/A")
-                        if wrong == "N/A"
-                            wrong = 0
-                        end
-                        total = count
-                        ratio = 1 - (wrong / total)
-                        push!(names, name)
-                        push!(ratios, ratio)
-                        push!(wrongs, wrong)
-                        push!(totals, total)
-                    end
-                    df = DataFrame(id=names, ratio=ratios, wrong=wrongs, total=totals)
-                    if df != DataFrame()
-                        CSV.write(joinpath(date_test_output_path, "$(date)_each_MP.csv"), df)
-                    else
-                        @show date
-                    end
-                end
-
-            end
-            true
-        end
-
-    end
+    skip_cols, which_sim_test, fuzzy_search, which_tests = test_input_setup()
 
     if "toy_xml_test" ∈ which_tests
-        #Test XML samples
+        #Test XML samples; house-agnostic, so this runs once rather than per-house
+        _, _, toy_toml = setup("house")
         @test begin
             print("Test XML test running ...")
-            general_options = toml["GENERAL_OPTIONS"]
+            general_options = toy_toml["GENERAL_OPTIONS"]
             edit_funcs = general_options["EDIT"]
             remove_nums = general_options["REMOVE_NUMS"]
             csv_edit = general_options["CSV_EDIT"]
@@ -234,7 +161,7 @@ end
                 for file in files
                     fn = joinpath(phase_xml_dir, file)
                     date_float, date, soup = RunModule.get_date(fn)
-                    date = RunModule.run_xml(fn, test_output_path, xml_parsing, csv_edit, edit_funcs, String(which_house), test_output_path, date, date_float, soup)
+                    date = RunModule.run_xml(fn, test_output_path, xml_parsing, csv_edit, edit_funcs, "house", test_output_path, date, date_float, soup)
                     remove_files(test_output_path, remove_nums)
                     sample_file = filter(contains(date), readdir(test_output_path))[1]
                     mv(joinpath(test_output_path, sample_file), joinpath(test_output_path, "$(file[1:end-4])_sample.csv"), force=true)
@@ -254,55 +181,135 @@ end
         end
     end
 
-    if "summary" ∈ which_tests
-        print("Dates...")
-        @test begin
-            sitting_house, sitting_senate = read_sitting_dates(@__DIR__)
-            csv_fn = get_all_csv_dates(outputpath, @__DIR__, which_house)
-            xml_fn = get_all_xml_dates(decompressed_inputpaths, @__DIR__, which_house)
+    sitting_house, sitting_senate = read_sitting_dates(@__DIR__)
 
-            xml = CSV.read(xml_fn, DataFrame, header=false)
-            csv = CSV.read(csv_fn, DataFrame, header=false)
-
-            xmls = xml[:, 2]
-            csvs = csv[:, 2]
-            only_in_xml = setdiff(xmls, csvs)
-            only_in_csv = setdiff(csvs, xmls)
-            if which_house == "senate"
-                only_in_sitting_not_xml = setdiff(sitting_senate, xmls)
-                only_in_sitting_not_csv = setdiff(sitting_senate, csvs)
-            elseif which_house == "house"
-                only_in_sitting_not_xml = setdiff(sitting_house, xmls)
-                only_in_sitting_not_csv = setdiff(sitting_house, csvs)
-
-            else
-                @assert "which_house is ill-defined"
+    for which_house in ["house", "senate"]
+        @testset "which_house = $which_house" begin
+            inputpaths, outputpath, toml = setup(which_house)
+            needs_outputpath = ("gold_standard" ∈ which_tests) || ("summary" ∈ which_tests)
+            if needs_outputpath
+                outputpath = ensure_decompressed(outputpath)
             end
-            open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_xml_$(which_house).csv"), "w") do io
-                for date in only_in_xml
-                    println(io, date)
+            input_scratch_dirs = []
+            decompressed_inputpaths = []
+            if "summary" ∈ which_tests
+                for inputpath in inputpaths
+                    input_scratch_dir = ensure_decompressed(dirname(inputpath))
+                    push!(input_scratch_dirs, input_scratch_dir)
+                    push!(decompressed_inputpaths, joinpath(input_scratch_dir, basename(inputpath)))
                 end
             end
-            open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_sitting_not_xml_$(which_house).csv"), "w") do io
-                for date in only_in_sitting_not_xml
-                    println(io, date)
+            try
+            #gold standard
+            if "gold_standard" ∈ which_tests
+                @test begin
+                    print("Gold standard test running ...")
+                    test_output_path = joinpath([@__DIR__, "test_outputs", "gs_outputs", "$which_house"])
+                    mkpath(test_output_path)
+
+                    test_setup = test_struct(skip_cols, which_sim_test, fuzzy_search, toml, which_house)
+                    gold_standard_path = joinpath([@__DIR__, "gold_standard", "$which_house"])
+                    clean_gs_files(gold_standard_path)
+                    gold_standard_csvs = get_all_csvnames(gold_standard_path)
+                    test_output_path_csv = joinpath(test_output_path, "CSVs")
+                    mkpath(test_output_path_csv)
+
+                    if true
+                        compare_gold_standard(outputpath, @__DIR__, test_setup, test_output_path_csv, gold_standard_csvs)
+                    end
+
+                    if "MP_specific_gs" ∈ which_tests
+                        print("Gold standard MP-specific test running ...")
+                        dates = all_GS_dates(gold_standard_csvs)
+                        date_to_list = MPs_not_perfect(dates, test_output_path_csv)
+                        date_to_impfct_namedict = Date_to_ImpftDict(date_to_list)
+                        date_to_namedict = Date_to_Dict(gold_standard_csvs)
+                        for (date, dict) in date_to_impfct_namedict
+                            names = []
+                            ratios = []
+                            wrongs = []
+                            totals = []
+                            date_test_output_path = joinpath(test_output_path, date)
+                            mkpath(date_test_output_path)
+                            name_to_total = date_to_namedict[date]
+                            for (id, count) in name_to_total
+                                name = id
+                                wrong = get(dict, id, "N/A")
+                                if wrong == "N/A"
+                                    wrong = 0
+                                end
+                                total = count
+                                ratio = 1 - (wrong / total)
+                                push!(names, name)
+                                push!(ratios, ratio)
+                                push!(wrongs, wrong)
+                                push!(totals, total)
+                            end
+                            df = DataFrame(id=names, ratio=ratios, wrong=wrongs, total=totals)
+                            if df != DataFrame()
+                                CSV.write(joinpath(date_test_output_path, "$(date)_each_MP.csv"), df)
+                            else
+                                @show date
+                            end
+                        end
+
+                    end
+                    true
                 end
-            end
-            open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_sitting_not_csv_$(which_house).csv"), "w") do io
-                for date in only_in_sitting_not_csv
-                    println(io, date)
-                end
+
             end
 
-            true
-        end
-    end
-    finally
-        if needs_outputpath
-            cleanup_decompressed(outputpath)
-        end
-        for input_scratch_dir in input_scratch_dirs
-            cleanup_decompressed(input_scratch_dir)
+            if "summary" ∈ which_tests
+                print("Dates...")
+                @test begin
+                    csv_fn = get_all_csv_dates(outputpath, @__DIR__, which_house)
+                    xml_fn = get_all_xml_dates(decompressed_inputpaths, @__DIR__, which_house)
+
+                    xml = CSV.read(xml_fn, DataFrame, header=false)
+                    csv = CSV.read(csv_fn, DataFrame, header=false)
+
+                    xmls = xml[:, 2]
+                    csvs = csv[:, 2]
+                    only_in_xml = setdiff(xmls, csvs)
+                    only_in_csv = setdiff(csvs, xmls)
+                    if which_house == "senate"
+                        only_in_sitting_not_xml = setdiff(sitting_senate, xmls)
+                        only_in_sitting_not_csv = setdiff(sitting_senate, csvs)
+                    elseif which_house == "house"
+                        only_in_sitting_not_xml = setdiff(sitting_house, xmls)
+                        only_in_sitting_not_csv = setdiff(sitting_house, csvs)
+
+                    else
+                        @assert false "which_house is ill-defined"
+                    end
+                    mkpath(joinpath(@__DIR__, "test_outputs", "dates"))
+                    open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_xml_$(which_house).csv"), "w") do io
+                        for date in only_in_xml
+                            println(io, date)
+                        end
+                    end
+                    open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_sitting_not_xml_$(which_house).csv"), "w") do io
+                        for date in only_in_sitting_not_xml
+                            println(io, date)
+                        end
+                    end
+                    open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_sitting_not_csv_$(which_house).csv"), "w") do io
+                        for date in only_in_sitting_not_csv
+                            println(io, date)
+                        end
+                    end
+
+                    true
+                end
+            end
+            finally
+                if needs_outputpath
+                    cleanup_decompressed(outputpath)
+                end
+#                for input_scratch_dir in input_scratch_dirs
+#                    cleanup_decompressed(input_scratch_dir)
+#                end
+            end
         end
     end
 end

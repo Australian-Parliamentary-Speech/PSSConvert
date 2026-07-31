@@ -12,6 +12,7 @@ function get_all_csv_dates(outputpath,testpath,which_house)
     all_csv_dates = find_all_csv_dates(all_csv_names)
     years = [split(date,"-")[1] for date in all_csv_dates]
     fn = joinpath(testpath,"test_outputs","dates","all_csv_dates_$(which_house).csv")
+    mkpath(dirname(fn))
     open(fn, "w") do io
         for (x,y) in zip(years, all_csv_dates)
             println(io, "$x,$y")
@@ -35,6 +36,7 @@ function get_all_xml_dates(inputpaths,testpath,which_house)
     all_xml_dates = find_all_xml_dates(all_xml_names)
     years = [split(date,"-")[1] for date in all_xml_dates]
     fn = joinpath(testpath,"test_outputs","dates","all_xml_dates_$(which_house).csv")
+    mkpath(dirname(fn))
     open(fn, "w") do io
         for (x,y) in zip(years, all_xml_dates)
             println(io, "$x,$y")
@@ -61,9 +63,9 @@ function read_sitting_dates(testpath)
             day = "0$day"
         end
         ##test##
-        if year == 1996 && month == 12 && day == 13
-            @show row
-        end
+#        if year == 1996 && month == 12 && day == 13
+#            @show row
+#        end
         #
         if_senate = row[3]
         if_house = row[2]
