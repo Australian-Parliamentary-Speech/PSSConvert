@@ -1,4 +1,4 @@
-using PSSConvert
+import PSSConvert
 using EzXML
 using InteractiveUtils
 using Test
@@ -149,6 +149,11 @@ end
     if needs_outputpath
         outputpath = ensure_decompressed(outputpath)
     end
+    input_scratch_dir = nothing
+    if "summary" ∈ which_tests
+        input_scratch_dir = ensure_decompressed(dirname(inputpath))
+        inputpath = joinpath(input_scratch_dir, basename(inputpath))
+    end
     try
     #gold standard
     if "gold_standard" ∈ which_tests
@@ -226,7 +231,9 @@ end
                 test_output_path = joinpath([@__DIR__, "test_outputs", "xml_test_outputs", Phase])
                 mkpath(test_output_path)
                 for file in files
-                    date = RunModule.run_xml(joinpath(@__DIR__, "xmls/$(Phase)/$file"), test_output_path, xml_parsing, csv_edit, edit_funcs, String(which_house), test_output_path)
+                    fn = joinpath(@__DIR__, "xmls/$(Phase)/$file")
+                    date_float, date, soup = RunModule.get_date(fn)
+                    date = RunModule.run_xml(fn, test_output_path, xml_parsing, csv_edit, edit_funcs, String(which_house), test_output_path, date, date_float, soup)
                     remove_files(test_output_path, remove_nums)
                     sample_file = filter(contains(date), readdir(test_output_path))[1]
                     mv(joinpath(test_output_path, sample_file), joinpath(test_output_path, "$(file[1:end-4])_sample.csv"), force=true)
@@ -300,9 +307,11 @@ end
         end
     end
     finally
-        nothing
-#        if needs_outputpath
-#            cleanup_decompressed(outputpath)
+        if needs_outputpath
+            cleanup_decompressed(outputpath)
+        end
+#        if !isnothing(input_scratch_dir)
+#            cleanup_decompressed(input_scratch_dir)
 #        end
     end
 end

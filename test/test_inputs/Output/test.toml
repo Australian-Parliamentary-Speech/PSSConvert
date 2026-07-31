@@ -6,13 +6,13 @@ LOGGING = true
 OUTPUT_PATH = "/home/eve/Development/ParlinfoSpeechScraper/src/PSSConvert/test/test_inputs/Output"
 
 [METADATA]
-TIME = "20:04:32"
+TIME = "12:29:16"
 ORIGINAL = "/home/eve/Development/ParlinfoSpeechScraper/src/PSSConvert/test/test_inputs/test.toml"
-DATE = "2026-07-20"
+DATE = "2026-07-31"
 
 [TEST_PARAMS]
 WHICH_SIM_TEST = "fuzzy"
 SKIP_COLS = ["speaker_no", "non_speech_flag", "page.no", "name", "electorate", "party", "role", "path", "Speaker", "Time", "Other"]
 WHICH_HOUSE = "house"
-WHICH_TESTS = ["gold_standard"]
+WHICH_TESTS = ["gold_standard", "MP_specific_gs", "toy_xml_test", "summary"]
 FUZZY_SEARCH = [5, 2]
