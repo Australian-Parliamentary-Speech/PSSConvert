@@ -11,7 +11,7 @@ function get_all_csv_dates(outputpath,testpath,which_house)
     all_csv_names = get_all_csv_subdir(outputpath)
     all_csv_dates = find_all_csv_dates(all_csv_names)
     years = [split(date,"-")[1] for date in all_csv_dates]
-    fn = joinpath("test_outputs","dates","all_csv_dates_$(which_house).csv")
+    fn = joinpath(testpath,"test_outputs","dates","all_csv_dates_$(which_house).csv")
     open(fn, "w") do io
         for (x,y) in zip(years, all_csv_dates)
             println(io, "$x,$y")
@@ -20,21 +20,21 @@ function get_all_csv_dates(outputpath,testpath,which_house)
     return fn
 end
 
-function get_all_xml_dates(inputpath,testpath,which_house)
+function get_all_xml_dates(inputpaths,testpath,which_house)
     function find_all_xml_dates(all_xml_names)
         simple_list = []
         for name in all_xml_names
             date_match = match(r"\d+_\d+_\d+",name)
             date = date_match.match
             date = replace(date, "_" => "-")
-            push!(simple_list,date) 
+            push!(simple_list,date)
         end
         return unique(simple_list)
     end
-    all_xml_names = get_all_xml_subdir(inputpath)
+    all_xml_names = reduce(vcat, get_all_xml_subdir(inputpath) for inputpath in inputpaths)
     all_xml_dates = find_all_xml_dates(all_xml_names)
     years = [split(date,"-")[1] for date in all_xml_dates]
-    fn = joinpath("test_outputs","dates","all_xml_dates_$(which_house).csv")
+    fn = joinpath(testpath,"test_outputs","dates","all_xml_dates_$(which_house).csv")
     open(fn, "w") do io
         for (x,y) in zip(years, all_xml_dates)
             println(io, "$x,$y")

@@ -10,7 +10,6 @@ using Dates
 include(joinpath(@__DIR__, "utils.jl"))
 include(joinpath(@__DIR__, "similarity_funcs.jl"))
 include(joinpath(@__DIR__, "clean_gs.jl"))
-include(joinpath(@__DIR__, "csv_test.jl"))
 include(joinpath(@__DIR__, "read_dates.jl"))
 
 const RunModule = PSSConvert.RunModule
@@ -28,14 +27,12 @@ struct test_struct
 end
 
 function setup(which_house)
-    tomlpath = joinpath("test_inputs", "$(which_house).toml")
+    tomlpath = joinpath(@__DIR__, "test_inputs", "$(which_house).toml")
     toml = setup_input(tomlpath, false)
     global_options = toml["GLOBAL"]
     outputpath = global_options["OUTPUT_PATH"]
-    xml_path_toml = toml["XML_DIR"][1]
-    xml_path = xml_path_toml["PATH"]
-    inputpath = joinpath("test_inputs", xml_path)
-    return inputpath, outputpath, toml
+    inputpaths = [joinpath(@__DIR__, "test_inputs", xml_dir_toml["PATH"]) for xml_dir_toml in toml["XML_DIR"]]
+    return inputpaths, outputpath, toml
 end
 
 function ensure_decompressed(path)
@@ -52,7 +49,7 @@ function cleanup_decompressed(path)
 end
 
 function test_input_setup()
-    tomlpath = joinpath("test_inputs", "test.toml")
+    tomlpath = joinpath(@__DIR__, "test_inputs", "test.toml")
     toml = setup_input(tomlpath, false)
     test_params = toml["TEST_PARAMS"]
     skip_cols = @. Symbol(test_params["SKIP_COLS"])
@@ -144,15 +141,19 @@ end
 
 @testset verbose = true "Entire set" begin
     skip_cols, which_sim_test, fuzzy_search, which_house, which_tests = test_input_setup()
-    inputpath, outputpath, toml = setup(which_house)
+    inputpaths, outputpath, toml = setup(which_house)
     needs_outputpath = ("gold_standard" ∈ which_tests) || ("summary" ∈ which_tests)
     if needs_outputpath
         outputpath = ensure_decompressed(outputpath)
     end
-    input_scratch_dir = nothing
+    input_scratch_dirs = []
     if "summary" ∈ which_tests
-        input_scratch_dir = ensure_decompressed(dirname(inputpath))
-        inputpath = joinpath(input_scratch_dir, basename(inputpath))
+        decompressed_inputpaths = []
+        for inputpath in inputpaths
+            input_scratch_dir = ensure_decompressed(dirname(inputpath))
+            push!(input_scratch_dirs, input_scratch_dir)
+            push!(decompressed_inputpaths, joinpath(input_scratch_dir, basename(inputpath)))
+        end
     end
     try
     #gold standard
@@ -225,13 +226,13 @@ end
             xml_parsing = general_options["XML_PARSING"]
 
             for Phase in ["AbstractPhase", "Phase2011", "PhaseSGML"]
-                test_dir = joinpath(@__DIR__, "xmls/$(Phase)/")
-                !isdir(test_dir) && continue
-                files = filter(!isdir, readdir(joinpath(@__DIR__, "xmls/$(Phase)/")))
-                test_output_path = joinpath([@__DIR__, "test_outputs", "xml_test_outputs", Phase])
+                phase_xml_dir = joinpath(@__DIR__, "xmls", Phase)
+                !isdir(phase_xml_dir) && continue
+                files = filter(!isdir, readdir(phase_xml_dir))
+                test_output_path = joinpath(@__DIR__, "test_outputs", "xml_test_outputs", Phase)
                 mkpath(test_output_path)
                 for file in files
-                    fn = joinpath(@__DIR__, "xmls/$(Phase)/$file")
+                    fn = joinpath(phase_xml_dir, file)
                     date_float, date, soup = RunModule.get_date(fn)
                     date = RunModule.run_xml(fn, test_output_path, xml_parsing, csv_edit, edit_funcs, String(which_house), test_output_path, date, date_float, soup)
                     remove_files(test_output_path, remove_nums)
@@ -239,26 +240,16 @@ end
                     mv(joinpath(test_output_path, sample_file), joinpath(test_output_path, "$(file[1:end-4])_sample.csv"), force=true)
                 end
 
-                gs_files = filter(f -> endswith(f, ".csv"), readdir(joinpath("xml_gold_standard", Phase)))
+                phase_gs_dir = joinpath(@__DIR__, "xml_gold_standard", Phase)
+                gs_files = filter(f -> endswith(f, ".csv"), readdir(phase_gs_dir))
                 gs_csvs = filter(f -> endswith(f, ".csv"), gs_files)
                 for gs_csv in gs_csvs
                     curr = joinpath(test_output_path, gs_csv)
-                    correct = joinpath(joinpath("xml_gold_standard", Phase), gs_csv)
+                    correct = joinpath(phase_gs_dir, gs_csv)
                     pass = check_csv(curr, correct)
                     print("$(gs_csv) is $(pass) \n")
                 end
             end
-            true
-        end
-    end
-
-    if false
-        @test begin
-            print("Test CSV test running ...")
-            test_output_path = joinpath([@__DIR__, "test_outputs", "CSV_test_outputs"])
-            mkpath(test_output_path)
-
-            known_errors_csv(outputpath, test_output_path)
             true
         end
     end
@@ -268,7 +259,7 @@ end
         @test begin
             sitting_house, sitting_senate = read_sitting_dates(@__DIR__)
             csv_fn = get_all_csv_dates(outputpath, @__DIR__, which_house)
-            xml_fn = get_all_xml_dates(inputpath, @__DIR__, which_house)
+            xml_fn = get_all_xml_dates(decompressed_inputpaths, @__DIR__, which_house)
 
             xml = CSV.read(xml_fn, DataFrame, header=false)
             csv = CSV.read(csv_fn, DataFrame, header=false)
@@ -287,17 +278,17 @@ end
             else
                 @assert "which_house is ill-defined"
             end
-            open(joinpath(["test_outputs", "dates", "only_in_xml_$(which_house).csv"]), "w") do io
+            open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_xml_$(which_house).csv"), "w") do io
                 for date in only_in_xml
                     println(io, date)
                 end
             end
-            open(joinpath(["test_outputs", "dates", "only_in_sitting_not_xml_$(which_house).csv"]), "w") do io
+            open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_sitting_not_xml_$(which_house).csv"), "w") do io
                 for date in only_in_sitting_not_xml
                     println(io, date)
                 end
             end
-            open(joinpath(["test_outputs", "dates", "only_in_sitting_not_csv_$(which_house).csv"]), "w") do io
+            open(joinpath(@__DIR__, "test_outputs", "dates", "only_in_sitting_not_csv_$(which_house).csv"), "w") do io
                 for date in only_in_sitting_not_csv
                     println(io, date)
                 end
@@ -310,9 +301,9 @@ end
         if needs_outputpath
             cleanup_decompressed(outputpath)
         end
-#        if !isnothing(input_scratch_dir)
-#            cleanup_decompressed(input_scratch_dir)
-#        end
+        for input_scratch_dir in input_scratch_dirs
+            cleanup_decompressed(input_scratch_dir)
+        end
     end
 end
 
