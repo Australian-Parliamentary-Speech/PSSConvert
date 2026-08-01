@@ -72,19 +72,19 @@ function get_date(fn)
 
     xdoc = readxml(fn)
     soup = root(xdoc)
-    date = get_date_from_xml(soup)
-    if !isnothing(date)
-        year, month, day, time = date
-        fn_year, fn_month, fn_day, fn_time = get_date_from_fn(fn)
-        if year != fn_year || month != fn_month || day != fn_day
+    xml_date = get_date_from_xml(soup)
+    fn_year, fn_month, fn_day, fn_time = get_date_from_fn(fn)
+    if !isnothing(xml_date)
+        xml_year, xml_month, xml_day, xml_time = xml_date
+        if xml_year != fn_year || xml_month != fn_month || xml_day != fn_day
             @info "XML and Filename do not agree on dates: year$fn_year,month$fn_month,day$fn_day"
         end
     else
-        year, month, day, time = get_date_from_fn(fn)
-        @info "Failure retrieving date from XML: year$year,month$month,day$day"
+        xml_time = "N/A"
+        @info "No XML date has been extracted"
     end
     Base.GC.gc()
-    return date_to_float(parse(Int, year), parse(Int, month), parse(Int, day)), time, soup
+    return date_to_float(parse(Int, fn_year), parse(Int, fn_month), parse(Int, fn_day)), fn_time, soup, xml_time
 end
 
 """
@@ -154,15 +154,20 @@ function run_PSSConvert(toml::Dict{String,Any})
     log_temp_dir = joinpath(output_path, "log_temp")
     mkpath(log_temp_dir)
 
+    date_log_path = joinpath(output_path, "date_comparison.csv")
+    date_log_io = open(date_log_path, "w")
+    write_row_to_io(date_log_io, ["Filename Date", "XML Date"])
+
     #    Threads.@threads for (year,fn) in xml_paths
     @showprogress for (year, fn) in xml_paths
-        date_float, date, soup = try
+        date_float, date, soup, xml_date = try
             get_date(fn)
         catch e
             @info "$fn did not pass opening the xml..."
             @error e
             continue
         end
+        write_row_to_io(date_log_io, [date, xml_date])
         output_path_ = joinpath(output_path, "$year")
         mkpath(output_path_)
         final_csv = joinpath(output_path_, "$(date)_edit_step$(remove_num[end] + 1).csv")
@@ -171,7 +176,8 @@ function run_PSSConvert(toml::Dict{String,Any})
         end
         remove_steps(output_path_, remove_num, date)
     end
-    
+    close(date_log_io)
+
     if sample_write
         copy_sample_file(output_path, length(edit_funcs))
     end

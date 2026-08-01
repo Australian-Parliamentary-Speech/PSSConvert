@@ -160,7 +160,7 @@ end
                 mkpath(test_output_path)
                 for file in files
                     fn = joinpath(phase_xml_dir, file)
-                    date_float, date, soup = RunModule.get_date(fn)
+                    date_float, date, soup, xml_date = RunModule.get_date(fn)
                     date = RunModule.run_xml(fn, test_output_path, xml_parsing, csv_edit, edit_funcs, "house", test_output_path, date, date_float, soup)
                     remove_files(test_output_path, remove_nums)
                     sample_file = filter(contains(date), readdir(test_output_path))[1]
