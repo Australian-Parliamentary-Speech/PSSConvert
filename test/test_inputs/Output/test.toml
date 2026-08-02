@@ -6,9 +6,9 @@ LOGGING = true
 OUTPUT_PATH = "/home/eve/Development/ParlinfoSpeechScraper/src/PSSConvert/test/test_inputs/Output"
 
 [METADATA]
-TIME = "17:21:15"
+TIME = "13:24:27"
 ORIGINAL = "/home/eve/Development/ParlinfoSpeechScraper/src/PSSConvert/test/test_inputs/test.toml"
-DATE = "2026-07-31"
+DATE = "2026-08-02"
 
 [TEST_PARAMS]
 WHICH_SIM_TEST = "fuzzy"

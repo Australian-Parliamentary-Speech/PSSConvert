@@ -145,7 +145,6 @@ function run_PSSConvert(toml::Dict{String,Any})
             end
         end
     end
-    @show xml_name_clean
 
     if xml_name_clean
         xml_paths = clean_xml_names(xml_paths)

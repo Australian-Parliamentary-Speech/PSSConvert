@@ -299,16 +299,22 @@ end
                         end
                     end
 
-                    true
+                    date_comparison = CSV.read(joinpath(outputpath, "date_comparison.csv"), DataFrame)
+                    mismatches = date_comparison[date_comparison[:, "Filename Date"] .!= date_comparison[:, "XML Date"], :]
+                    CSV.write(joinpath(@__DIR__, "test_outputs", "dates", "date_mismatches_$(which_house).csv"), mismatches)
+
+                    dates_match = Set(date_comparison[:, "Filename Date"]) == Set(csvs)
+
+                    dates_match
                 end
             end
             finally
                 if needs_outputpath
                     cleanup_decompressed(outputpath)
                 end
-#                for input_scratch_dir in input_scratch_dirs
-#                    cleanup_decompressed(input_scratch_dir)
-#                end
+                for input_scratch_dir in input_scratch_dirs
+                    cleanup_decompressed(input_scratch_dir)
+                end
             end
         end
     end
