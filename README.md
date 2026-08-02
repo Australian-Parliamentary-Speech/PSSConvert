@@ -1,5 +1,3 @@
-[![Documentation](https://github.com/Australian-Parliamentary-Speech/Scraper/actions/workflows/documentation.yml/badge.svg)](https://australian-parliamentary-speech.github.io/Scraper/)
-
 # PSSConvert
 
 `PSSConvert` parses raw Hansard XML files into structured CSV files, one row per speech, with columns for speaker, party, electorate, debate context, and more. It's one of four submodules that make up the [ParlinfoSpeechScraper](../../) pipeline, taking as input the XML produced by `PSSSourceXML` and `PSSSourceSGML`.
