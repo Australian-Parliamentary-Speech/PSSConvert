@@ -152,15 +152,25 @@ end
             csv_edit = general_options["CSV_EDIT"]
             xml_parsing = general_options["XML_PARSING"]
 
+            # Dummy dates per Phase, chosen to fall within that Phase's date_to_phase range,
+            # so the phase doesn't need to be derived from each xml file's date.
+            phase_dummy_dates = Dict(
+                "AbstractPhase" => ("2020-01-01", date_to_float(2020, 1, 1)),
+                "Phase2011" => ("2005-01-01", date_to_float(2005, 1, 1)),
+                "PhaseSGML" => ("1990-01-01", date_to_float(1990, 1, 1)),
+            )
+
             for Phase in ["AbstractPhase", "Phase2011", "PhaseSGML"]
                 phase_xml_dir = joinpath(@__DIR__, "xmls", Phase)
                 !isdir(phase_xml_dir) && continue
                 files = filter(!isdir, readdir(phase_xml_dir))
                 test_output_path = joinpath(@__DIR__, "test_outputs", "xml_test_outputs", Phase)
                 mkpath(test_output_path)
+                date, date_float = phase_dummy_dates[Phase]
                 for file in files
                     fn = joinpath(phase_xml_dir, file)
-                    date_float, date, soup, xml_date = RunModule.get_date(fn)
+                    @show fn
+                    soup = root(readxml(fn))
                     date = RunModule.run_xml(fn, test_output_path, xml_parsing, csv_edit, edit_funcs, "house", test_output_path, date, date_float, soup)
                     remove_files(test_output_path, remove_nums)
                     sample_file = filter(contains(date), readdir(test_output_path))[1]
