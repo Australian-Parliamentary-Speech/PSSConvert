@@ -71,7 +71,6 @@ function run(; input::AbstractString, verbose::Bool, should_compress::Bool, skip
     return true
 end
 
-export main
 function (@main)(_ARGS)
     return run(; get_args()...) ? 0 : 1
 end

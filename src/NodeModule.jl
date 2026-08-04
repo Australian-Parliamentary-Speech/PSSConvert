@@ -287,10 +287,6 @@ function get_talker_from_parent(node::Node, parent_node::Node)
     soup = parent_node.soup
     parent_node = parent_node.node
     talker_node = findfirst_in_subsoup(parent_node.path, "//talker", soup)
-    if occursin("The Law and Justice Legislation Amendment Bill 1996 amends", node.node.content)
-        @show talker_node.content
-    end
-
     function find_content(xpath)
         talker_content_node = findfirst_in_subsoup(talker_node.path, xpath, soup)
         if isnothing(talker_content_node)
@@ -473,31 +469,6 @@ end
 function find_p_node_parent(node::Node{<:PNode}, node_tree)
     return node_tree[end]
 end
-
-#function construct_row(node::Node{<:AbstractNode{<:AbstractPhase}},node_tree)
-#    phase = get_phasetype(node)
-#    debateinfo =  find_section_title(node_tree,node.soup,DebateNode{phase})
-#    subdebateinfo =  find_section_title(node_tree,node.soup,SubdebateNode{phase})
-#    if node.headers_dict["content"] == "N/A"
-#        content = node.node.content
-#        content = get_node_content(node,content)
-#        node.headers_dict["content"] = content
-#    end
-#
-#    node.headers_dict["subdebateinfo"] = subdebateinfo
-#    node.headers_dict["debateinfo"] = debateinfo
-#    node.headers_dict["path"] = node.node.path
-#    row = collect(values(node.headers_dict))
-#    row_ = []
-#    for r in row
-#        if typeof(r) <: Int
-#            push!(row_,r)
-#        else
-#            push!(row_,clean_text(r))
-#        end
-#    end
-#    return row_
-#end
 
 function define_headers(::Type{<:AbstractPhase})
     headers = ["question_flag", "answer_flag", "interjection_flag", "speech_flag", "petition_flag", "quote_flag", "motionnospeech_flag", "chamber_flag", "name", "name.id", "electorate", "party", "role", "page.no", "content", "subdebateinfo", "debateinfo", "path"]

@@ -48,7 +48,7 @@ function find_all_child_speeches(row_no,rows,header_to_num,is_written)
     #    end
 
     content = ""
-    while !(stop_before_next_talker(row_no+1,rows,header_to_num,log)) && (row_no < length(rows))
+    while !(stop_before_next_talker(row_no+1,rows,header_to_num)) && (row_no < length(rows))
         row = get_row(rows,row_no + 1)
         content_ = row[header_to_num[:content]]
         if content_ != "N/A"
@@ -71,7 +71,7 @@ function equiv(current_row,next_row,header_to_num)
     return current_flags == next_flags && current_debate == next_debate && current_subdebate == next_subdebate
 end
 
-function stop_before_next_talker(row_no,rows,header_to_num,log)
+function stop_before_next_talker(row_no,rows,header_to_num)
     current_row = get_row(rows,row_no - 1)
     if is_stage_direction(rows[row_no],header_to_num)
         return true

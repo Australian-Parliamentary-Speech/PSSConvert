@@ -23,7 +23,7 @@ end
 function final_add_from_Speaker(row,header_to_num)
     Speaker = row[header_to_num[:Speaker]] 
     if Speaker != "N/A" && row[header_to_num[:name]] == "N/A"
-        row[header_to_num[:name]] == Speaker
+        row[header_to_num[:name]] = Speaker
     end
     return row
 end

@@ -15,14 +15,6 @@ function date_to_float(year, month, day)
 end
 
 
-function create_dict_multiple_values(keys, values)
-    d = Dict()
-    for key in keys
-        d[key] = push!(get(d, key, []), value)
-    end
-    return d
-end
-
 function edit_row(row)
     edit_row = ""
     for i in row
