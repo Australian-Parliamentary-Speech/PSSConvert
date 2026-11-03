@@ -14,3 +14,6 @@ Outputs/SenateCSV/hansard/
 Analysis/*
 /docs/build/
 Manifest.toml
+
+# Written by the tests on every run, with paths for the current machine
+test/test_inputs/Output/
