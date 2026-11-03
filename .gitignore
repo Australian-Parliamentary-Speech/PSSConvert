@@ -14,3 +14,5 @@ Outputs/SenateCSV/hansard/
 Analysis/*
 /docs/build/
 Manifest.toml
+# Written by the gold standard test
+test/gold_outputs/

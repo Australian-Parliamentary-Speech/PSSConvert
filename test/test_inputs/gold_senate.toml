@@ -1,0 +1,17 @@
+# Runs PSSConvert on the bundled gold standard inputs only (see ../gold_inputs/README.md)
+[ global ]
+    output_path = "../gold_outputs/senate"
+
+[[ XML_DIR ]]
+    path = "../gold_inputs/senate"
+
+[ general_options ]
+    which_house = "senate"
+    year = [1901,2026]
+    xml_parsing = true
+    edit = ["speaker_time","re","stage_direction","free_node","flatten","flatten","column_decorate","final_re"]
+    csv_edit = true
+    run_xml_toggle = true
+    sample = false
+    remove_nums = [0,1,2,3,4,5,6,7]
+    xml_name_clean = false
