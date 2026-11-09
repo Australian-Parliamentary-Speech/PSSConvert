@@ -12,10 +12,11 @@ const NA_VALUES = ("", "N/A", "NA")
 
 const COLLECTIVE = r"(?i)^(?:an?\s+|some\s+|several\s+|other\s+)?(?:hono(?:u)?rable\s+|hon\.?\s+)?(?:(opposition|government)\s+)?(?:members?|senators?|supporters?)(?:\s+of\s+the\s+(opposition|government))?(?:\s+interjecting)?[\s.:,—–-]*$"
 const NOT_PRESIDING = r"(?i)vice[\s-]*president|executive\s+council"
-const INCORPORATED = r"(?i)^(?:the\s+)?(?:\w+\s+){0,3}(?:read|reads|incorporated)\s+as\s+follows|^\(?(?:speech|quote|document|table)\s+incorporated\)?"
+# petitions "read as follows" are left to the petition flag
+const INCORPORATED = r"(?i)^(?:the\s+)?(?!petition)(?:\w+\s+){0,3}(?:read|reads|incorporated)\s+as\s+follows|^\(?(?:speech|quote|document|table)\s+incorporated\)?"
 const DIVISION = r"(?i)^(?:the\s+(?:house|senate|committee)\s+divided|(?:ayes|noes|pairs)\b[^a-z]{0,20}$)"
 const PROCEDURAL_LINE = r"(?i)^(?:question\s+(?:put|agreed\s+to|resolved\s+in\s+the\s+(?:affirmative|negative)|negatived|so\s+resolved)|debate\s+(?:adjourned|interrupted|resumed)|leave\s+granted|motion\s+(?:agreed\s+to|negatived)|amendments?\s+(?:agreed\s+to|negatived)|clauses?\s+[\w\s,]{0,30}agreed\s+to|bill(?:,\s+as\s+amended,)?\s+(?:read\s+a\s+(?:first|second|third)\s+time|agreed\s+to|reported)|bill\s*(?:-|—|–)?\s*by\s+leave\s*(?:-|—|–)?\s*read\s+a\s+\w+\s+time|sitting\s+suspended|standing\s+(?:and\s+sessional\s*\.?\s+)?orders\s+suspended|ordered\s+that|resolution\s+reported|in\s+committee|progress\s+reported|(?:the\s+)?(?:house|senate)\s+adjourned|(?:mr\.?\s+|madam\s+)?(?:deputy\s+)?(?:speaker|president)\s+(?:\([^)]*\)\s+)?took\s+the\s+chair)"
-const PROCEDURAL_EXTRA = r"(?i)^(?:motion\s+\(by\s+[^)]{2,60}\)\s*(?:[-—–]\s*by\s+leave\s*[-—–]\s*)?proposed|bill\s+(?:presented|received\s+from)|ordered\s*[-—–]?\s*that|resolved\s*\(on\s+motion\s+by)"
+const PROCEDURAL_EXTRA = r"(?i)^(?:motion\s+\(by\s+[^)]{2,60}\)\s*(?:[-—–]\s*by\s+leave\s*[-—–]\s*)?proposed|bill\s+(?:presented|received\s+from)|ordered\s*[-—–]?\s*that|resolved\s*\(on\s+motion\s+by|(?:the\s+)?(?:house|senate)\s+adjourned\s+at|the\s+(?:honourable\s+|honorable\s+)?(?:member|senator)\s+for\s+[\w\s'-]{2,40}?\s+(?:then\s+|thereupon\s+)?(?:left|withdrew\s+from)\s+the\s+chamber)"
 # a row whose text still starts with a speaker's name: the source names someone, the parser lost it (#87, #92)
 const NAME_IN_TEXT = r"^(?:Mr|Mrs|Ms|Miss|Dr|Sir|Senator|Colonel|Major|General|Captain|Lt|An?\s+Hono(?:u)?rable)\.?\s*[-:.]*\s*(?:Sir\s+)?[A-Z][A-Z'\-]{1,}"
 
@@ -97,7 +98,7 @@ function apply_conventions!(row, h)
     end
 
     # #95 (trial): a spoken row whose source names no one
-    if spoken && isna(name) && isna(row[h[Symbol("name.id")]]) && !occursin(NAME_IN_TEXT, content)
+    if spoken && isna(name) && isna(row[h[Symbol("name.id")]]) && !isna(content) && !occursin(NAME_IN_TEXT, content)
         row[h[Symbol("name.id")]] = "UNKNOWN"
     end
 
