@@ -6,4 +6,5 @@
     which_sim_test = "fuzzy"
     fuzzy_search = [5,2]
 #    which_tests=["summary"]
-    which_tests = ["gold_standard","MP_specific_gs","toy_xml_test","summary"]
+    # "summary" also checks a full run's dates and needs the full inputs and outputs (#77)
+    which_tests = ["gold_standard","MP_specific_gs","toy_xml_test"]

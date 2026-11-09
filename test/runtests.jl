@@ -13,6 +13,8 @@ include(joinpath(@__DIR__, "clean_gs.jl"))
 include(joinpath(@__DIR__, "read_dates.jl"))
 
 const RunModule = PSSConvert.RunModule
+# How far a gold standard day's score may fall below its baseline before the test fails
+const GOLD_TOLERANCE = 0.005
 using PSSConvert.RunModule.EditModule
 using PSSConvert.RunModule.Utils
 
@@ -196,7 +198,17 @@ end
     for which_house in ["house", "senate"]
         @testset "which_house = $which_house" begin
             inputpaths, outputpath, toml = setup(which_house)
-            needs_outputpath = ("gold_standard" ∈ which_tests) || ("summary" ∈ which_tests)
+            # The gold standard test runs on the bundled inputs in gold_inputs/ (#77); only the
+            # summary test needs a full run's outputs.
+            needs_outputpath = "summary" ∈ which_tests
+            gold_outputpath = nothing
+            if "gold_standard" ∈ which_tests
+                gold_toml = setup_input(joinpath(@__DIR__, "test_inputs", "gold_$(which_house).toml"), false)
+                gold_outputpath = gold_toml["GLOBAL"]["OUTPUT_PATH"]
+                rm(gold_outputpath, force=true, recursive=true)
+                mkpath(gold_outputpath)
+                RunModule.run_PSSConvert(gold_toml)
+            end
             if needs_outputpath
                 outputpath = ensure_decompressed(outputpath)
             end
@@ -220,13 +232,12 @@ end
                     test_setup = test_struct(skip_cols, which_sim_test, fuzzy_search, toml, which_house)
                     gold_standard_path = joinpath([@__DIR__, "gold_standard", "$which_house"])
                     clean_gs_files(gold_standard_path)
-                    gold_standard_csvs = get_all_csvnames(gold_standard_path)
+                    # baseline.csv sits beside the gold standards but is not one
+                    gold_standard_csvs = filter(f -> basename(f) != "baseline.csv", get_all_csvnames(gold_standard_path))
                     test_output_path_csv = joinpath(test_output_path, "CSVs")
                     mkpath(test_output_path_csv)
 
-                    if true
-                        compare_gold_standard(outputpath, @__DIR__, test_setup, test_output_path_csv, gold_standard_csvs)
-                    end
+                    compare_gold_standard(gold_outputpath, @__DIR__, test_setup, test_output_path_csv, gold_standard_csvs)
 
                     if "MP_specific_gs" ∈ which_tests
                         print("Gold standard MP-specific test running ...")
@@ -267,6 +278,19 @@ end
                     true
                 end
 
+                # Fail if any day's score falls below its recorded baseline (#78)
+                @testset "gold standard scores do not fall" begin
+                    scores = CSV.read(joinpath(@__DIR__, "test_outputs", "gs_outputs", which_house, "CSVs", "overall_score.csv"), DataFrame)
+                    baseline_fn = joinpath(@__DIR__, "gold_standard", which_house, "baseline.csv")
+                    if !isfile(baseline_fn)
+                        CSV.write(baseline_fn, scores[:, ["gs_name", "ratio"]])
+                        @warn "No baseline yet: wrote $baseline_fn from this run. Commit it to make the test bite."
+                    end
+                    baseline = Dict(zip(CSV.read(baseline_fn, DataFrame).gs_name, CSV.read(baseline_fn, DataFrame).ratio))
+                    for row in eachrow(scores)
+                        @test row.ratio >= get(baseline, row.gs_name, 0.0) - GOLD_TOLERANCE
+                    end
+                end
             end
 
             if "summary" ∈ which_tests
