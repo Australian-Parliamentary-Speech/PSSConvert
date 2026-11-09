@@ -262,6 +262,32 @@ function day_rules!(rows, h, date)
             end
         end
     end
+    # words that lost their speaker, and petitions, before turns are merged
+    last, ltopic, after_doc = nothing, nothing, false
+    for x in rows
+        r = x[1]
+        topic(r) != ltopic && (last = nothing; ltopic = topic(r))
+        content = string(r[h[:content]])
+        unnamed_other = isflag(r, h, :non_speech_flag) && x[3] == "other" && isna(r[h[:name]]) && isna(r[h[nid]])
+        if unnamed_other && occursin(r"(?i)petition", string(r[h[:debateinfo]])) && !occursin(STAGE_SENTENCE, strip(content))
+            # petitions are petitions (decided 2026-11-10): the printed text in a Petitions debate
+            set_type!(r, h, :petition_flag)
+            x[3] = "N/A"
+        elseif unnamed_other && !isnothing(last) && length(split(content)) >= 12 && !is_procedural(strip(content)) &&
+               !occursin(READ_AS_FOLLOWS, strip(content)) && !after_doc && !occursin(r"^\s*That\b", content) &&
+               !occursin(r"(?i)took\s+the\s+chair|suspended|standing\s+order|read\s+prayers", content) &&
+               !any(p -> p[2] || occursin(STAGE_SENTENCE, p[1]), stage_pieces(content))
+            # a spoken paragraph that lost its speaker: the member who was speaking continues
+            set_type!(r, h, last[3]; clear=SPOKEN_FLAGS)
+            r[h[:name]], r[h[nid]] = last[1], last[2]
+            x[3] = "N/A"
+        end
+        if spoken_row(r, h) && !isna(r[h[:name]])
+            flag = first(f for f in SPOKEN_FLAGS if isflag(r, h, f))
+            last = flag in (:interjection_flag, :quote_flag) ? last : (string(r[h[:name]]), string(r[h[nid]]), flag)
+        end
+        after_doc = occursin(READ_AS_FOLLOWS, strip(content))
+    end
     return merge_turns(rows, h)
 end
 
