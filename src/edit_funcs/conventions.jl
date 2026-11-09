@@ -105,6 +105,36 @@ function apply_conventions!(row, h)
     return isflag(row, h, :non_speech_flag) ? nonspeech_kind(row, h) : "N/A"
 end
 
+# "Mr President," / "Madam Speaker," as a row's name is a senator or member addressing the chair, not the chair
+const VOCATIVE = r"(?i)^(?:mr|madam)\.?\s+(?:acting\s+)?(?:deputy\s+)?(?:speaker|president|chair(?:man)?)\s*,\s*$"
+
+"""#104: every presiding officer's spoken row has name.id 10000 (§2). Where the row carried the person's
+own id, it moves to presiding_phid. Returns the presiding_phid value."""
+function presiding_id!(row, h, presiding)
+    name = string(row[h[:name]])
+    spoken = any(f -> isflag(row, h, f), SPOKEN_FLAGS)
+    (spoken && !isnothing(presiding_office(name)) && !occursin(NOT_PRESIDING, name) && !occursin(VOCATIVE, name)) || return presiding
+    nid = string(row[h[Symbol("name.id")]])
+    if !(nid == "10000" || isna(nid)) && presiding == "N/A"
+        presiding = nid
+    end
+    row[h[Symbol("name.id")]] = "10000"
+    return presiding
+end
+
+"""#106: a written answer's later paragraphs carry no id in the source; they belong to the member whose
+paragraph they follow, within the same question (subdebateinfo). `prev` is (subdebateinfo, name, id) or nothing."""
+function written_answer_id!(row, h, prev)
+    sub = string(row[h[:subdebateinfo]])
+    nid = string(row[h[Symbol("name.id")]])
+    if isna(nid) && !isnothing(prev) && prev[1] == sub
+        row[h[Symbol("name.id")]] = prev[3]
+        isna(row[h[:name]]) && (row[h[:name]] = prev[2])
+        nid = prev[3]
+    end
+    return isna(nid) ? prev : (sub, string(row[h[:name]]), nid)
+end
+
 "#97: the speaker a row belongs to for counting turns, or nothing for non-speech rows"
 function turn_key(row, h)
     isflag(row, h, :non_speech_flag) && return nothing
