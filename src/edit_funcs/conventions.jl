@@ -262,7 +262,32 @@ function day_rules!(rows, h, date)
             end
         end
     end
-    return rows
+    return merge_turns(rows, h)
+end
+
+const TYPE_COLS = (:question_flag, :answer_flag, :interjection_flag, :speech_flag, :petition_flag, :quote_flag,
+                   :motionnospeech_flag, :non_speech_flag)
+
+"""§1: one row per turn. Consecutive rows with the same speaker (name and id), the same type, debate, subdebate and
+chamber are one turn split by paragraph in the source, and become one row. Non-speech rows merge only when they are
+paragraphs of one written answer or one incorporated document; procedural lines and headings stay one per row."""
+function merge_turns(rows, h)
+    nid = Symbol("name.id")
+    sig(r) = (string(r[h[:name]]), string(r[h[nid]]), Tuple(haskey(h, c) ? string(r[h[c]]) : "" for c in TYPE_COLS),
+              string(r[h[:debateinfo]]), string(r[h[:subdebateinfo]]), string(r[h[:chamber_flag]]))
+    out = Vector{Vector{Any}}()
+    for x in rows
+        r, ptype = x[1], x[3]
+        mergeable = ptype == "N/A" || ptype in ("written_answer", "incorporated")
+        if !isempty(out) && mergeable && out[end][3] == ptype && sig(out[end][1]) == sig(r) &&
+           !(isna(r[h[:name]]) && isna(r[h[nid]]) && ptype == "N/A")
+            prev = out[end][1]
+            prev[h[:content]] = string(prev[h[:content]]) * " " * string(r[h[:content]])
+        else
+            push!(out, x)
+        end
+    end
+    return out
 end
 
 "#97: the speaker a row belongs to for counting turns, or nothing for non-speech rows"
