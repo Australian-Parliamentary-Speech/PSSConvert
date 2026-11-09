@@ -40,5 +40,38 @@ function edit_row_gs(row,header_to_num)
     row[content_num] = content
     #replace missing values with "N/A"
     row = [ismissing(cell) ? "N/A" : cell for cell in row]
+    presiding_as_speech!(row,header_to_num)
+    incorporated_as_nonspeech!(row,header_to_num)
+    return row
+end
+
+# The gold standards were coded before #96: documents "read as follows" or incorporated were never spoken,
+# so they are non-speech even though the gold standards often code them as speech.
+function incorporated_as_nonspeech!(row,header_to_num)
+    flags = [:question_flag, :answer_flag, :interjection_flag, :speech_flag, :petition_flag, :quote_flag, :motionnospeech_flag]
+    if any(f -> string(row[header_to_num[f]]) in ("1", "1.0"), flags[1:4]) &&
+            occursin(EditModule.INCORPORATED, strip(string(row[header_to_num[:content]])))
+        for f in flags
+            row[header_to_num[f]] = 0
+        end
+        row[header_to_num[:non_speech_flag]] = 1
+    end
+    return row
+end
+
+# The gold standards were coded before #93: they code the Speaker's and President's words in question time
+# as interjections, questions or answers. Recode those rows as speech so the gold standards follow the
+# decided convention; the files in original/ are unchanged.
+function presiding_as_speech!(row,header_to_num)
+    spoken = [:question_flag, :answer_flag, :interjection_flag, :speech_flag]
+    nid = string(row[header_to_num[Symbol("name.id")]])
+    name = string(row[header_to_num[:name]])
+    if (nid == "10000" || nid == "N/A") && !isnothing(EditModule.presiding_office(name)) &&
+            !occursin(EditModule.NOT_PRESIDING, name) && any(f -> string(row[header_to_num[f]]) in ("1", "1.0"), spoken)
+        for f in spoken
+            row[header_to_num[f]] = 0
+        end
+        row[header_to_num[:speech_flag]] = 1
+    end
     return row
 end
