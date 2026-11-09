@@ -290,6 +290,7 @@ function run_xml(fn, output_path, xml_parsing, csv_edit, edit_funcs, which_house
     end
 
     if csv_edit
+        EditModule.CURRENT_HOUSE[] = string(which_house)
         edit_csv(date, edit_funcs, outputcsv, output_path, logger)
     end
     open("$(output_path)/log_failed_files.txt", "w") do file
