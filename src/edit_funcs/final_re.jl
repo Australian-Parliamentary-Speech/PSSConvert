@@ -52,6 +52,8 @@ function edit_row_final(row,header_to_num)
     content = replace(content, r" +" => " ")
     #deletes space before and after -
     content = replace(content, r"\s*-\s*" => "-")
+    #removes white space at the start and end (PSSConvert#35, rules 5 and 6)
+    content = strip(content)
     row[content_num] = content
     return row
 end
