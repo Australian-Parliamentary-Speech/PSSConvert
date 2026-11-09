@@ -232,7 +232,8 @@ end
                     test_setup = test_struct(skip_cols, which_sim_test, fuzzy_search, toml, which_house)
                     gold_standard_path = joinpath([@__DIR__, "gold_standard", "$which_house"])
                     clean_gs_files(gold_standard_path)
-                    gold_standard_csvs = get_all_csvnames(gold_standard_path)
+                    # baseline.csv sits beside the gold standards but is not one
+                    gold_standard_csvs = filter(f -> basename(f) != "baseline.csv", get_all_csvnames(gold_standard_path))
                     test_output_path_csv = joinpath(test_output_path, "CSVs")
                     mkpath(test_output_path_csv)
 
