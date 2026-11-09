@@ -11,6 +11,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
     open(output_fn, "w") do io
         write_row_to_io(io,[string.(headers_)..., "presiding_phid", "nonspeech_type", "turn_no"])
         turn, last_key, prev_wa, doc, tabler = 0, nothing, nothing, nothing, nothing
+        built = Vector{Vector{Any}}()
         for row in rows
             row = if_speaker_then_speech(row,header_to_num)
             row = final_add_from_Speaker(row,header_to_num)
@@ -39,15 +40,17 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
                         ptype, pres = occursin(DIVISION, text) ? "division" : "procedural", "N/A"
                     end
                 end
-                if piece[header_to_num[:content]] != ""
-                    key = turn_key(piece,header_to_num)
-                    if !isnothing(key) && key != last_key
-                        turn += 1
-                        last_key = key
-                    end
-                    write_row_to_io(io,[piece..., pres, ptype, turn])
-                end
+                piece[header_to_num[:content]] != "" && push!(built, Any[piece, pres, ptype])
             end
+        end
+        day_rules!(built, header_to_num, date)
+        for (piece, pres, ptype) in built
+            key = turn_key(piece,header_to_num)
+            if !isnothing(key) && key != last_key
+                turn += 1
+                last_key = key
+            end
+            write_row_to_io(io,[piece..., pres, ptype, turn])
         end
     end
 end
