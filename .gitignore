@@ -17,3 +17,5 @@ Manifest.toml
 
 # Written by the tests on every run, with paths for the current machine
 test/test_inputs/Output/
+# Written by the gold standard test
+test/gold_outputs/

@@ -1,0 +1,113 @@
+# Corpus conventions decided by Pat and Marija on 2026-11-09, applied in the final edit step:
+#   #93 presiding officers' words are speech, never interjections
+#   #94 collective voices get a generic id: OPPOSITION, GOVERNMENT, or MEMBERS as the residual
+#   #95 spoken rows whose source names no one get name.id UNKNOWN (trial)
+#   #96 unspoken words are non-speech even with an id; nonspeech_type says what kind
+#   #97 turn_no counts changes of speaker (speaker_no stays the source order)
+#   #89 procedural lines with no speaker are non-speech
+
+const TYPE_FLAGS = [:question_flag, :answer_flag, :interjection_flag, :speech_flag, :petition_flag, :quote_flag, :motionnospeech_flag]
+const SPOKEN_FLAGS = [:question_flag, :answer_flag, :interjection_flag, :speech_flag]
+const NA_VALUES = ("", "N/A", "NA")
+
+const COLLECTIVE = r"(?i)^(?:an?\s+|some\s+|several\s+|other\s+)?(?:hono(?:u)?rable\s+|hon\.?\s+)?(?:(opposition|government)\s+)?(?:members?|senators?|supporters?)(?:\s+of\s+the\s+(opposition|government))?(?:\s+interjecting)?[\s.:,—–-]*$"
+const NOT_PRESIDING = r"(?i)vice[\s-]*president|executive\s+council"
+# petitions "read as follows" are left to the petition flag
+const INCORPORATED = r"(?i)^(?:the\s+)?(?!petition)(?:\w+\s+){0,3}(?:read|reads|incorporated)\s+as\s+follows|^\(?(?:speech|quote|document|table)\s+incorporated\)?"
+const DIVISION = r"(?i)^(?:the\s+(?:house|senate|committee)\s+divided|(?:ayes|noes|pairs)\b[^a-z]{0,20}$)"
+const PROCEDURAL_LINE = r"(?i)^(?:question\s+(?:put|agreed\s+to|resolved\s+in\s+the\s+(?:affirmative|negative)|negatived|so\s+resolved)|debate\s+(?:adjourned|interrupted|resumed)|leave\s+granted|motion\s+(?:agreed\s+to|negatived)|amendments?\s+(?:agreed\s+to|negatived)|clauses?\s+[\w\s,]{0,30}agreed\s+to|bill(?:,\s+as\s+amended,)?\s+(?:read\s+a\s+(?:first|second|third)\s+time|agreed\s+to|reported)|bill\s*(?:-|—|–)?\s*by\s+leave\s*(?:-|—|–)?\s*read\s+a\s+\w+\s+time|sitting\s+suspended|standing\s+(?:and\s+sessional\s*\.?\s+)?orders\s+suspended|ordered\s+that|resolution\s+reported|in\s+committee|progress\s+reported|(?:the\s+)?(?:house|senate)\s+adjourned|(?:mr\.?\s+|madam\s+)?(?:deputy\s+)?(?:speaker|president)\s+(?:\([^)]*\)\s+)?took\s+the\s+chair)"
+const PROCEDURAL_EXTRA = r"(?i)^(?:motion\s+\(by\s+[^)]{2,60}\)\s*(?:[-—–]\s*by\s+leave\s*[-—–]\s*)?proposed|bill\s+(?:presented|received\s+from)|ordered\s*[-—–]?\s*that|resolved\s*\(on\s+motion\s+by|(?:the\s+)?(?:house|senate)\s+adjourned\s+at|the\s+(?:honourable\s+|honorable\s+)?(?:member|senator)\s+for\s+[\w\s'-]{2,40}?\s+(?:then\s+|thereupon\s+)?(?:left|withdrew\s+from)\s+the\s+chamber)"
+# a row whose text still starts with a speaker's name: the source names someone, the parser lost it (#87, #92)
+const NAME_IN_TEXT = r"^(?:Mr|Mrs|Ms|Miss|Dr|Sir|Senator|Colonel|Major|General|Captain|Lt|An?\s+Hono(?:u)?rable)\.?\s*[-:.]*\s*(?:Sir\s+)?[A-Z][A-Z'\-]{1,}"
+
+isflag(row, h, f) = haskey(h, f) && string(row[h[f]]) == "1"
+isna(x) = string(x) in NA_VALUES
+
+function set_type!(row, h, flag; clear=TYPE_FLAGS)
+    for f in clear
+        haskey(h, f) && (row[h[f]] = 0)
+    end
+    if flag == :non_speech_flag
+        row[h[:non_speech_flag]] = 1
+    else
+        row[h[:non_speech_flag]] = 0
+        row[h[flag]] = 1
+    end
+end
+
+"#94: OPPOSITION, GOVERNMENT or MEMBERS for a voice that is not one person, otherwise nothing"
+function collective_id(name)
+    m = match(COLLECTIVE, strip(string(name)))
+    isnothing(m) && return nothing
+    side = lowercase(something(m.captures[1], m.captures[2], ""))
+    return side == "opposition" ? "OPPOSITION" : side == "government" ? "GOVERNMENT" : "MEMBERS"
+end
+
+"#96: what kind of non-speech row this is"
+function nonspeech_kind(row, h)
+    content = strip(string(row[h[:content]]))
+    for col in (:subdebateinfo, :debateinfo)
+        if haskey(h, col) && lowercase(content) == lowercase(strip(string(row[h[col]])))
+            return "heading"
+        end
+    end
+    # answers to questions on notice: only the first paragraph carries the member's id
+    if string(row[h[:chamber_flag]]) == "3"
+        return "written_answer"
+    elseif occursin(INCORPORATED, content)
+        return "incorporated"
+    elseif occursin(DIVISION, content)
+        return "division"
+    elseif is_procedural(content)
+        return "procedural"
+    end
+    return "other"
+end
+
+# anchored at the start, so a long row is still procedural when it carries the motion or clause text it reports
+is_procedural(content) = occursin(PROCEDURAL_LINE, content) || occursin(PROCEDURAL_EXTRA, content)
+
+"Applies #93, #94, #89, #96 and #95 to one row and returns its nonspeech_type"
+function apply_conventions!(row, h)
+    name, nid = row[h[:name]], string(row[h[Symbol("name.id")]])
+    spoken = any(f -> isflag(row, h, f), SPOKEN_FLAGS)
+    content = strip(string(row[h[:content]]))
+
+    # #93: the Speaker, President and Chair have the floor as of right
+    if spoken && (nid == "10000" || isna(nid)) && !isnothing(presiding_office(name)) && !occursin(NOT_PRESIDING, string(name))
+        set_type!(row, h, :speech_flag; clear=SPOKEN_FLAGS)
+    end
+
+    # #94: collective voices are interjections with a generic id
+    cid = isna(nid) ? collective_id(name) : nothing
+    if spoken && !isnothing(cid)
+        row[h[Symbol("name.id")]] = cid
+        set_type!(row, h, :interjection_flag; clear=SPOKEN_FLAGS)
+    end
+
+    # #96: tabled or incorporated documents were not spoken
+    if spoken && occursin(INCORPORATED, content)
+        set_type!(row, h, :non_speech_flag)
+        spoken = false
+    end
+
+    # #89: a short procedural line with no speaker is a stage direction
+    if spoken && isna(name) && isna(row[h[Symbol("name.id")]]) && (is_procedural(content) || occursin(DIVISION, content))
+        set_type!(row, h, :non_speech_flag)
+        spoken = false
+    end
+
+    # #95 (trial): a spoken row whose source names no one
+    if spoken && isna(name) && isna(row[h[Symbol("name.id")]]) && !isna(content) && !occursin(NAME_IN_TEXT, content)
+        row[h[Symbol("name.id")]] = "UNKNOWN"
+    end
+
+    return isflag(row, h, :non_speech_flag) ? nonspeech_kind(row, h) : "N/A"
+end
+
+"#97: the speaker a row belongs to for counting turns, or nothing for non-speech rows"
+function turn_key(row, h)
+    isflag(row, h, :non_speech_flag) && return nothing
+    nid = string(row[h[Symbol("name.id")]])
+    return isna(nid) || nid == "UNKNOWN" ? "name:" * string(row[h[:name]]) : nid
+end
