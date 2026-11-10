@@ -123,6 +123,16 @@ def chars(path):
     return sum(c.count('"') for c in content), sum(1 for c in content if c and c != c.strip()), len(content)
 
 
+def first_aligned(starts, aligned, n):
+    """each row start moved to the row's first aligned word; a row with no aligned word keeps its start"""
+    order = sorted(starts)
+    out = set()
+    for k, s in enumerate(order):
+        end = order[k + 1] if k + 1 < len(order) else n
+        out.add(next((w for w in range(s, end) if w in aligned), s))
+    return out
+
+
 def score(gold, out, conventions=False):
     gw, ga, gs = stream(gold, conventions)
     ow, oa, os_ = stream(out)
@@ -132,9 +142,12 @@ def score(gold, out, conventions=False):
     spk = sum(ga[i][1] == oa[j][1] for i, j in pairs)
     typ = sum(ga[i][2] == oa[j][2] for i, j in pairs)
     conf = collections.Counter((ga[i][2], oa[j][2]) for i, j in pairs)
-    # row starts: a gold start is found if the aligned output word also starts a row
+    # row starts: a gold start is found if the aligned output word also starts a row. A row that begins with
+    # words the other side lacks (a list label "(a)" one side kept) starts, for this purpose, at its first
+    # aligned word: missing or extra text is counted by text_recall and text_precision, not as a boundary.
     a2b = dict(pairs)
     b2a = {j: i for i, j in pairs}
+    gs, os_ = first_aligned(gs, a2b, len(gw)), first_aligned(os_, b2a, len(ow))
     g_found = sum(1 for s in gs if s in a2b and a2b[s] in os_)
     o_ok = sum(1 for s in os_ if s in b2a and b2a[s] in gs)
     g_ns = sum(1 for i, j in pairs if ga[i][2] == "nonspeech")
