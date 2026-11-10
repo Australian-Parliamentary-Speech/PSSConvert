@@ -199,6 +199,72 @@ function stage_pieces(content)
     return [p for p in pieces if !isempty(p[1])]
 end
 
+const UPON_NOTICE = r"(?i)upon\s+notice"
+const QUESTION_TIME = r"(?i)questions?\s+without\s+notice"
+const GENERIC_IDS = ("10000", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT")
+year_of(date) = something(tryparse(Int, first(string(date), 4)), 0)
+spoken_row(r, h) = any(f -> isflag(r, h, f), SPOKEN_FLAGS)
+real_id(r, h) = (nid = string(r[h[Symbol("name.id")]]); !isna(nid) && !(nid in GENERIC_IDS))
+
+"""Rules that need the whole day, applied after every row is built. `rows` holds [row, presiding, nonspeech_type].
+- Floor holder (all eras): an interjection by the member who holds the floor in that debate is their speech. Any
+  speech, the chair's included, takes the floor.
+- Questions upon notice (before 1981): a subdebate whose first spoken row is a question "upon notice" is a printed
+  question and answer: non-speech written_answer, chamber_flag 3, ids kept (§4, decided 2026-11-10), up to an
+  oral supplementary ("Arising out of the answer ...").
+- Question time in the 1981-1997 SGML conversion, where the source marks no questions or answers: in each
+  Questions Without Notice subdebate the first member to speak asks (question); other members answer."""
+function day_rules!(rows, h, date)
+    yr = year_of(date)
+    nid = Symbol("name.id")
+    topic(r) = (string(r[h[:debateinfo]]), string(r[h[:subdebateinfo]]))
+    # floor holder
+    floor, ftopic = nothing, nothing
+    for x in rows
+        r = x[1]
+        topic(r) != ftopic && (floor = nothing; ftopic = topic(r))
+        if isflag(r, h, :speech_flag)
+            # any speech, the chair's included, takes the floor; only a member's own id can hold it
+            floor = real_id(r, h) ? string(r[h[nid]]) : nothing
+        elseif isflag(r, h, :interjection_flag) && !isnothing(floor) && string(r[h[nid]]) == floor &&
+               !occursin(r"(?i)interjecting", string(r[h[:content]]))
+            set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
+        end
+    end
+    groups = Dict{Tuple{String,String},Vector{Int}}()
+    order = Tuple{String,String}[]
+    for (i, x) in enumerate(rows)
+        t = topic(x[1])
+        haskey(groups, t) || push!(order, t)
+        push!(get!(groups, t, Int[]), i)
+    end
+    for t in order
+        idx = groups[t]
+        spoken = [i for i in idx if spoken_row(rows[i][1], h) && string(rows[i][1][h[nid]]) != "10000"]
+        isempty(spoken) && continue
+        first_text = first(string(rows[spoken[1]][1][h[:content]]), 300)
+        if yr < 1981 && occursin(UPON_NOTICE, first_text)
+            for i in spoken
+                r = rows[i][1]
+                # an oral supplementary ("Arising out of the answer, may I ask ...") ends the printed answer
+                occursin(r"(?i)^\s*arising\s+out\s+of", string(r[h[:content]])) && break
+                set_type!(r, h, :non_speech_flag)
+                r[h[:chamber_flag]] = 3
+                rows[i][3] = "written_answer"
+            end
+        elseif 1981 <= yr <= 1997 && occursin(QUESTION_TIME, t[1]) && !occursin(QUESTION_TIME, t[2]) &&
+               !any(i -> isflag(rows[i][1], h, :question_flag) || isflag(rows[i][1], h, :answer_flag), idx)
+            asker = string(rows[spoken[1]][1][h[nid]])
+            for i in spoken
+                r = rows[i][1]
+                isflag(r, h, :speech_flag) || continue
+                set_type!(r, h, string(r[h[nid]]) == asker ? :question_flag : :answer_flag; clear=SPOKEN_FLAGS)
+            end
+        end
+    end
+    return rows
+end
+
 "#97: the speaker a row belongs to for counting turns, or nothing for non-speech rows"
 function turn_key(row, h)
     isflag(row, h, :non_speech_flag) && return nothing
