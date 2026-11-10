@@ -16,6 +16,11 @@ date_to_phase[(1981.0, upperbound)] = PhaseSGML
 function define_flags(node::Node{<:AbstractNode{PhaseSGML}}, parent_node, node_tree)
     ParentTypes = [QuestionNode, AnswerNode, InterjectionNode, SpeechNode, PetitionNode, QuoteNode_{PhaseSGML}, MotionnospeechNode]
     headers = ["question_flag", "answer_flag", "interjection_flag", "speech_flag", "petition_flag", "quote_flag", "motionnospeech_flag"]
+    # the first paragraph of an <interject>, <question>, <answer> or <speech> sits inside its <talk.start>: it takes
+    # the type of the element around the talk.start, not none (#120)
+    if parent_node isa Node{<:InterTalkNode} && length(node_tree) >= 2
+        parent_node = node_tree[end-1]
+    end
     flags = map(node_type -> parent_node isa Node{<:node_type} ? 1 : 0, ParentTypes)
     header_and_flag = zip(headers, flags)
     for couple in header_and_flag
