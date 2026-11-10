@@ -211,7 +211,9 @@ function remove_bits(row, header_to_num)
     content = replace(content, r"\s*=\s*" => "")
     #removes a leading time stamp "( 16:10 ):" or "(Mr X):", but keeps list labels "(a)" and
     #stage directions "(Quorum formed)" (#119)
-    content = replace(content, r"^\(\s*\d{1,2}\s*[:.]\s*\d{2}\s*\)\s*:?" => "")
+    content = replace(content, r"^\(\s*\d{1,2}\s*[:.]\s*\d{2}(?:\s*[ap]\.?\s*m\.?)?\s*\)\s*[:—–-]*\s*" => "")
+    #a petition presenter's "(from 36 citizens)" was dropped with the name before it; still dropped, as before
+    content = replace(content, r"^\(from\s+[\d,]+\s+(?:citizens|petitioners|signatories|electors|residents)\)\s*$"i => "")
     content = replace(content, r"^\([^)]+\)\s*:" => "")
     #removes '- 
     content = replace(content, r"^'-\s*" => "")
