@@ -278,18 +278,13 @@ end
                     true
                 end
 
-                # Fail if any day's score falls below its recorded baseline (#78)
-                @testset "gold standard scores do not fall" begin
-                    scores = CSV.read(joinpath(@__DIR__, "test_outputs", "gs_outputs", which_house, "CSVs", "overall_score.csv"), DataFrame)
-                    baseline_fn = joinpath(@__DIR__, "gold_standard", which_house, "baseline.csv")
-                    if !isfile(baseline_fn)
-                        CSV.write(baseline_fn, scores[:, ["gs_name", "ratio"]])
-                        @warn "No baseline yet: wrote $baseline_fn from this run. Commit it to make the test bite."
-                    end
-                    baseline = Dict(zip(CSV.read(baseline_fn, DataFrame).gs_name, CSV.read(baseline_fn, DataFrame).ratio))
-                    for row in eachrow(scores)
-                        @test row.ratio >= get(baseline, row.gs_name, 0.0) - GOLD_TOLERANCE
-                    end
+                # Fail if any day's score against gold standard v2 falls below its recorded baseline (#117).
+                # v2 applies the conventions decided 2026-11-09 and 2026-11-10; the v1 scores written above
+                # (gs_outputs/) are kept for reference only, since v1 predates those conventions (#101).
+                @testset "gold standard v2 scores do not fall" begin
+                    v2 = joinpath(@__DIR__, "gold_standard_v2")
+                    cmd = `python3 -I $(joinpath(@__DIR__, "score_v2.py")) --house $which_house $v2 $gold_outputpath $(joinpath(v2, "baseline.csv"))`
+                    @test success(pipeline(cmd; stdout=stdout, stderr=stderr))
                 end
             end
 
