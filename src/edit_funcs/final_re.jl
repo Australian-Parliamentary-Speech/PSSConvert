@@ -10,7 +10,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
 
     open(output_fn, "w") do io
         write_row_to_io(io,[string.(headers_)..., "presiding_phid", "nonspeech_type", "turn_no"])
-        turn, last_key, prev_wa = 0, nothing, nothing
+        turn, last_key, prev_wa, doc, tabler = 0, nothing, nothing, nothing, nothing
         for row in rows
             row = if_speaker_then_speech(row,header_to_num)
             row = final_add_from_Speaker(row,header_to_num)
@@ -19,6 +19,11 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             presiding = presiding_id!(row,header_to_num,presiding)
             nonspeech_type = apply_conventions!(row,header_to_num)
             prev_wa = nonspeech_type == "written_answer" ? written_answer_id!(row,header_to_num,prev_wa) : nothing
+            nonspeech_type, doc = incorporated!(row,header_to_num,nonspeech_type,doc,tabler)
+            nid = string(row[header_to_num[Symbol("name.id")]])
+            if any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) && !isna(nid) && !(nid in ("10000","UNKNOWN","MEMBERS","OPPOSITION","GOVERNMENT"))
+                tabler = nid
+            end
             content = row[header_to_num[:content]]
             if content != ""
                 key = turn_key(row,header_to_num)

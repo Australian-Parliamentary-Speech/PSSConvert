@@ -135,6 +135,32 @@ function written_answer_id!(row, h, prev)
     return isna(nid) ? prev : (sub, string(row[h[:name]]), nid)
 end
 
+# "The document read as follows—" on a row of its own: the rows after it are the document (#105)
+const READ_AS_FOLLOWS = r"(?i)^\(?\s*the\s+(?!petition)(?:\w+\s+){0,2}reads?\s+as\s+follows\s*\)?\s*[-—–:.]*\s*$"
+
+"""#105: incorporated documents (§3). After a "… read as follows" row, the quote rows straight after it (or a
+first row with no named speaker) are the document: non-speech `incorporated`, with the tabling member's id (the last member who spoke)
+where the row has none. `state` is (tabler_id, rows_taken) while inside a document, otherwise nothing.
+Returns (nonspeech_type, state)."""
+function incorporated!(row, h, nonspeech_type, state, tabler)
+    content = strip(string(row[h[:content]]))
+    if occursin(READ_AS_FOLLOWS, content)
+        return nonspeech_type, (tabler, 0)
+    end
+    nid = Symbol("name.id")
+    # the document is a quote, or a row with no named speaker; a named member's speech right after "read as follows"
+    # is the member resuming, because the document itself (often a table, #100) was not kept
+    if !isnothing(state) && (isflag(row, h, :quote_flag) || (state[2] == 0 && isna(row[h[:name]]))) && !isflag(row, h, :petition_flag)
+        set_type!(row, h, :non_speech_flag)
+        isna(row[h[nid]]) && !isnothing(state[1]) && (row[h[nid]] = state[1])
+        return "incorporated", (state[1], state[2] + 1)
+    end
+    if nonspeech_type == "incorporated" && isna(row[h[nid]]) && !isnothing(tabler)
+        row[h[nid]] = tabler
+    end
+    return nonspeech_type, nothing
+end
+
 "#97: the speaker a row belongs to for counting turns, or nothing for non-speech rows"
 function turn_key(row, h)
     isflag(row, h, :non_speech_flag) && return nothing
