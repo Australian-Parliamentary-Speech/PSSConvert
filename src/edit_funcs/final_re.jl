@@ -25,13 +25,28 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
                 tabler = nid
             end
             content = row[header_to_num[:content]]
-            if content != ""
-                key = turn_key(row,header_to_num)
-                if !isnothing(key) && key != last_key
-                    turn += 1
-                    last_key = key
+            # #108: stage directions inside a spoken row become rows of their own
+            pieces = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) ? stage_pieces(content) : [(content, false)]
+            for (text, stage) in pieces
+                piece, ptype, pres = row, nonspeech_type, presiding
+                if length(pieces) > 1
+                    piece = copy(row)
+                    piece[header_to_num[:content]] = text
+                    if stage
+                        set_type!(piece, header_to_num, :non_speech_flag)
+                        piece[header_to_num[:name]] = "N/A"
+                        piece[header_to_num[Symbol("name.id")]] = "N/A"
+                        ptype, pres = occursin(DIVISION, text) ? "division" : "procedural", "N/A"
+                    end
                 end
-                write_row_to_io(io,[row..., presiding, nonspeech_type, turn])
+                if piece[header_to_num[:content]] != ""
+                    key = turn_key(piece,header_to_num)
+                    if !isnothing(key) && key != last_key
+                        turn += 1
+                        last_key = key
+                    end
+                    write_row_to_io(io,[piece..., pres, ptype, turn])
+                end
             end
         end
     end
