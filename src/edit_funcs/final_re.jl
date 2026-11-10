@@ -43,7 +43,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
                 piece[header_to_num[:content]] != "" && push!(built, Any[piece, pres, ptype])
             end
         end
-        day_rules!(built, header_to_num, date)
+        built = day_rules!(built, header_to_num, date)
         for (piece, pres, ptype) in built
             key = turn_key(piece,header_to_num)
             if !isnothing(key) && key != last_key
