@@ -22,6 +22,8 @@ function division_text(xml_node)
             elseif iselement(c)
                 name = nodename(c)
                 name in DIVISION_SKIP && continue
+                # 1901-1980: a bare "AYES" or "NOES" paragraph heads the list of names
+                name == "para" && occursin(r"^\s*(?:AYES|NOES|PAIRS)\.?\s*$", nodecontent(c)) && continue
                 if name in DIVISION_VOTES
                     votes = findfirst("num.votes", c)
                     if !isnothing(votes)
