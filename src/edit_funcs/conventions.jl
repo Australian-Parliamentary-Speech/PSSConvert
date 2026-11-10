@@ -56,7 +56,7 @@ function nonspeech_kind(row, h)
         return "written_answer"
     elseif occursin(INCORPORATED, content)
         return "incorporated"
-    elseif occursin(DIVISION, content)
+    elseif occursin(DIVISION, content) || occursin(r"/division(?:\[\d+\])?$", string(get(row, get(h, :path, 0), "")))
         return "division"
     elseif is_procedural(content)
         return "procedural"
