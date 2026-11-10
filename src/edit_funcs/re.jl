@@ -209,8 +209,10 @@ function remove_bits(row, header_to_num)
     content = replace(content, r"^\s*[.\-—–]+\s*" => "")
     #removes leading =
     content = replace(content, r"\s*=\s*" => "")
-    #removes leading ( name )
-    content = replace(content, r"^\([^)]+\)(?:\s*:)?" => "")
+    #removes a leading time stamp "( 16:10 ):" or "(Mr X):", but keeps list labels "(a)" and
+    #stage directions "(Quorum formed)" (#119)
+    content = replace(content, r"^\(\s*\d{1,2}\s*[:.]\s*\d{2}\s*\)\s*:?" => "")
+    content = replace(content, r"^\([^)]+\)\s*:" => "")
     #removes '- 
     content = replace(content, r"^'-\s*" => "")
     row[content_num] = content
