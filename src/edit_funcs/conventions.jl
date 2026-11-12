@@ -210,7 +210,8 @@ real_id(r, h) = (nid = string(r[h[Symbol("name.id")]]); !isna(nid) && !(nid in G
 - Floor holder (all eras): an interjection by the member who holds the floor in that debate is their speech. Any
   speech, the chair's included, takes the floor.
 - Questions upon notice (before 1981): a subdebate whose first spoken row is a question "upon notice" is a printed
-  question and answer: non-speech written_answer, chamber_flag 3, ids kept (§4, decided 2026-11-10), up to an
+  question and answer: non-speech, chamber_flag 3, ids kept (§4, decided 2026-11-10; the question becomes
+  written_question and the reply written_answer in written_questions!, #127), up to an
   oral supplementary ("Arising out of the answer ...").
 - Question time in the 1981-1997 SGML conversion, where the source marks no questions or answers: in each
   Questions Without Notice subdebate the first member to speak asks (question); other members answer."""
@@ -288,7 +289,54 @@ function day_rules!(rows, h, date)
         end
         after_doc = occursin(READ_AS_FOLLOWS, strip(content))
     end
+    written_questions!(rows, h)
     return merge_turns(rows, h)
+end
+
+# "asked the Minister ..., upon notice", near the start (after "(Question No. 1109)" or a stray name fragment)
+const ASKED = r"(?i)^.{0,40}?\basked\s+the\b"
+# a minister reading a question out: "On the 28th March, Senator Dooley asked the following question, upon notice-"
+const READS_OUT = r"(?i)\basked\s+the\s+following\s+questions?\b"
+const READS_OUT_END = r"(?i)asked\s+the\s+following\s+questions?[\s,.:;—–-]*(?:upon\s+notice)?[\s,.:;—–-]*$"
+# the start of a minister's reply, or a reply that still opens with the minister's name ("Mr. Fairbairn.-")
+const ANSWER_TEXT = r"(?i)^(?:\s*(?:mr|mrs|dr|sir|senator)\.?\s*[a-z][\w'-]+\.?\s*[-—–]|.{0,160}?(?:\banswers?\s+to\s+the\s+(?:right\s+)?hono(?:u)?rable|\bhas\s+(?:now\s+)?(?:provided|supplied|furnished)\b|\bthe\s+answers?\s+(?:is|are)\b))"
+
+"""#127: in a block of written questions and answers, the question is non-speech written_question and the
+minister's reply stays written_answer. In order:
+1. a minister reading a question out ("... asked the following question, upon notice") is the answer;
+2. a row that starts "asked the ...", or follows a read-out, is a question;
+3. a row that starts as a reply ("The answer to the honourable member's question", "has provided") is the answer;
+4. the asker's later paragraphs are the question;
+5. other paragraphs inside a <question> element are the question while one is open.
+The <question> element alone does not start a question: some days' XML puts a reply inside one."""
+function written_questions!(rows, h)
+    nid = Symbol("name.id")
+    asker, open_q, prev = nothing, false, ""
+    for x in rows
+        if x[3] != "written_answer"
+            asker, open_q, prev = nothing, false, ""
+            continue
+        end
+        r = x[1]
+        path = haskey(h, :path) ? string(r[h[:path]]) : ""
+        id = string(r[h[nid]])
+        content = string(r[h[:content]])
+        q = if occursin(READS_OUT, content)
+            false
+        elseif occursin(ASKED, content) || occursin(READS_OUT_END, prev)
+            asker = id
+            true
+        elseif occursin(ANSWER_TEXT, content)
+            false
+        elseif open_q && !isna(id) && id == asker
+            true
+        else
+            open_q && occursin(r"/question(?:\[\d+\])?/", path) && !occursin(r"/talk\.start/", path)
+        end
+        q && (x[3] = "written_question")
+        open_q, prev = q, content
+    end
+    return rows
 end
 
 const TYPE_COLS = (:question_flag, :answer_flag, :interjection_flag, :speech_flag, :petition_flag, :quote_flag,
@@ -304,7 +352,7 @@ function merge_turns(rows, h)
     out = Vector{Vector{Any}}()
     for x in rows
         r, ptype = x[1], x[3]
-        mergeable = ptype == "N/A" || ptype in ("written_answer", "incorporated")
+        mergeable = ptype == "N/A" || ptype in ("written_answer", "written_question", "incorporated")
         if !isempty(out) && mergeable && out[end][3] == ptype && sig(out[end][1]) == sig(r) &&
            !(isna(r[h[:name]]) && isna(r[h[nid]]) && ptype == "N/A")
             prev = out[end][1]

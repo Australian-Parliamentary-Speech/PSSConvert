@@ -10,7 +10,7 @@ the row, so existing columns keep their positions.
 | Column | Values | Issue |
 |---|---|---|
 | `presiding_phid` | The presiding officer's own Handbook id where it is known reliably, otherwise `N/A`. `name.id` stays `10000` for every presiding officer. | Australian-Parliamentary-Speech/PSSConvert#90 |
-| `nonspeech_type` | On non-speech rows: `written_answer`, `incorporated`, `procedural`, `division`, `heading` or `other`. `N/A` on all other rows. | Australian-Parliamentary-Speech/PSSConvert#96 |
+| `nonspeech_type` | On non-speech rows: `written_question`, `written_answer`, `incorporated`, `procedural`, `division`, `heading` or `other`. `N/A` on all other rows. | Australian-Parliamentary-Speech/PSSConvert#96 |
 | `turn_no` | Counts turns: increases by one when the speaker changes. Non-speech rows keep the number of the turn before them. `0` before the first speaker. | Australian-Parliamentary-Speech/PSSConvert#97 |
 
 ### Changed meanings and flags
@@ -29,6 +29,9 @@ the row, so existing columns keep their positions.
   ("The document read as follows") are now `non_speech_flag = 1`, keeping the tabling member's id, like
   written answers to questions on notice (`chamber_flag = 3`), which were already non-speech
   (Australian-Parliamentary-Speech/PSSConvert#96).
+- A question on notice is `written_question`, with the asker's id, and the minister's printed reply is
+  `written_answer`, with the minister's id. Both are non-speech; before this both were `written_answer`
+  (Australian-Parliamentary-Speech/PSSConvert#127).
 - Short procedural lines with no speaker ("Question agreed to.", "Bill read a third time.") are
   `non_speech_flag = 1`; some were flagged as speech (Australian-Parliamentary-Speech/PSSConvert#89).
 - `content` keeps double quotes (written as `""` inside the quoted CSV field) and has no leading or
