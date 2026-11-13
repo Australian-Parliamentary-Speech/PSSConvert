@@ -163,8 +163,9 @@ end
 
 # #108: a whole sentence that is a stage direction, inside or at the end of a spoken row
 const STAGE_SENTENCE = r"(?i)^(?:debate\s+(?:\(on\s+motion\s+by\s+[^)]{2,60}\)\s*)?(?:adjourned|interrupted|resumed)|question\s+(?:put|agreed\s+to|resolved\s+in\s+the\s+(?:affirmative|negative)|so\s+resolved\s+in\s+the\s+(?:affirmative|negative)|negatived)|(?:bill|motion|amendments?|clauses?[\w\s,]{0,30}|report|resolution)\s+(?:\(by\s+[^)]{2,60}\)\s*,?\s*)?(?:,?\s*by\s+leave,?\s*)?(?:agreed\s+to|negatived|withdrawn|amended\s+accordingly|adopted|reported)|amendment\s+\(by\s+[^)]{2,60}\)\s+proposed|leave\s+(?:not\s+)?granted|petition\s+received|progress\s+reported|ordered\s+that\s+the\s+report\s+be\s+(?:printed|made\s+a\s+parliamentary\s+paper)|report\s+made\s+a\s+parliamentary\s+paper|bill\s+read\s+a\s+(?:first|second|third)\s+time|more\s+than\s+the\s+number\s+of\s+(?:members|senators)\s+required\s+by\s+the\s+standing\s+orders?\s+having\s+risen|(?:the\s+)?(?:house|senate)\s+adjourned\s+at|[{(\[]?\s*sitting\s+suspended)"
-# a sentence ends at . ! ? or a closing bracket before a capital, an opening bracket or "by leave"; or at a dash before a capital
-const SENTENCE_BREAK = r"(?<=[.!?)\]}])\s+(?=[A-Z({\[]|by\s+leave)|(?<=[—–])\s*(?=[A-Z])"
+# a sentence ends at . ! ? or a closing bracket before a capital, an opening bracket or "by leave"; or at a dash before a
+# capital, including a hyphen run onto the full stop when rows are joined ("affirmative.-I move")
+const SENTENCE_BREAK = r"(?<=[.!?)\]}])\s+(?=[A-Z({\[]|by\s+leave)|(?<=[—–])\s*(?=[A-Z])|(?<=[.!?])-(?=[A-Z])"
 
 """#108: splits a spoken row's content into pieces, marking the whole sentences that are stage directions (§1, §3).
 A sentence counts only if the stage-direction phrase covers all but at most 8 of its words. The spoken pieces
@@ -199,24 +200,33 @@ function stage_pieces(content)
     return [p for p in pieces if !isempty(p[1])]
 end
 
-# the editor's note, in the past tense, that a document follows; "The letter reads as follows" is spoken
-const DOCUMENT_FOLLOWS = r"\bThe\s+(?:\w+\s+){0,2}?(?:document|documents|answer|answers|table|tables|statement|speech|speeches|letter|letters|list|schedule)\s+read\s+as\s+follows\s*[-—–:.]*"
+# the editor's note that a document follows: in the past tense, or in brackets ("(The document reads as follows)");
+# "The letter reads as follows" without brackets is spoken
+const DOC_NOUN = raw"(?:document|answer|table|statement|speech|speeche|letter|list|schedule|report|eulogy|tribute|attachment|response|paper)s?"
+const DOCUMENT_FOLLOWS = Regex(raw"(?:\(\s*The\s+(?:\w+\s+){0,2}?" * DOC_NOUN * raw"\s+reads?|\bThe\s+(?:\w+\s+){0,2}?" * DOC_NOUN *
+                               raw"\s+read)\s+as\s+follows\s*\)?\s*[-—–:.]*")
 
-"""#134: a spoken piece that goes on past "The document read as follows" is split there: the words after the note
-are the document, marked `:document`. The note itself stays with the spoken words, as on its own row (#105)."""
+"""#134: the note "The document read as follows" inside a spoken piece is split off as a row of its own (`:note`,
+non-speech with no id, as gold codes it), and the words after it, if any, are the document (`:document`, §3). A piece
+that is only the note is left alone: `incorporated!` already treats it as the note (#105)."""
 function document_pieces(pieces)
     out = Tuple{String,Any}[]
     for (text, stage) in pieces
         m = stage ? nothing : match(DOCUMENT_FOLLOWS, text)
-        if isnothing(m) || m.offset == 1
-            push!(out, (text, stage)); continue
-        end
+        isnothing(m) && (push!(out, (text, stage)); continue)
         cut = m.offset + ncodeunits(m.match)
-        before, after = strip(text[1:prevind(text, cut)]), strip(text[cut:end])
+        before = strip(text[1:prevind(text, m.offset)])
+        note, after = strip(m.match), strip(text[cut:end])
         if length(split(after)) < 3
+            # a stray bracket or dash after the note belongs to it
+            note, after = strip(note * " " * after), ""
+        end
+        if isempty(before) && isempty(after)
             push!(out, (text, stage)); continue
         end
-        push!(out, (String(before), false)); push!(out, (String(after), :document))
+        isempty(before) || push!(out, (String(before), false))
+        push!(out, (String(note), :note))
+        isempty(after) || push!(out, (String(after), :document))
     end
     return out
 end

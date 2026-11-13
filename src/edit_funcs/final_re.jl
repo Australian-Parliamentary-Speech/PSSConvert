@@ -33,11 +33,19 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
                 if length(pieces) > 1
                     piece = copy(row)
                     piece[header_to_num[:content]] = text
-                    if stage === :document
+                    if stage === :note
+                        # #134: the note is a row of its own, and the rows after it are the document (#105)
+                        set_type!(piece, header_to_num, :non_speech_flag)
+                        piece[header_to_num[:name]] = "N/A"
+                        piece[header_to_num[Symbol("name.id")]] = "N/A"
+                        ptype, pres = "procedural", "N/A"
+                        doc = (tabler, 0)
+                    elseif stage === :document
                         # #134: the document after "The document read as follows" is the tabling member's (§3)
                         set_type!(piece, header_to_num, :non_speech_flag)
                         piece[header_to_num[Symbol("name.id")]] = isnothing(tabler) ? "N/A" : tabler
                         ptype, pres = "incorporated", "N/A"
+                        doc = (tabler, 1)
                     elseif stage
                         set_type!(piece, header_to_num, :non_speech_flag)
                         piece[header_to_num[:name]] = "N/A"
