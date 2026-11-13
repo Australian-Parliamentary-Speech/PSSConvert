@@ -199,6 +199,28 @@ function stage_pieces(content)
     return [p for p in pieces if !isempty(p[1])]
 end
 
+# the editor's note, in the past tense, that a document follows; "The letter reads as follows" is spoken
+const DOCUMENT_FOLLOWS = r"\bThe\s+(?:\w+\s+){0,2}?(?:document|documents|answer|answers|table|tables|statement|speech|speeches|letter|letters|list|schedule)\s+read\s+as\s+follows\s*[-—–:.]*"
+
+"""#134: a spoken piece that goes on past "The document read as follows" is split there: the words after the note
+are the document, marked `:document`. The note itself stays with the spoken words, as on its own row (#105)."""
+function document_pieces(pieces)
+    out = Tuple{String,Any}[]
+    for (text, stage) in pieces
+        m = stage ? nothing : match(DOCUMENT_FOLLOWS, text)
+        if isnothing(m) || m.offset == 1
+            push!(out, (text, stage)); continue
+        end
+        cut = m.offset + ncodeunits(m.match)
+        before, after = strip(text[1:prevind(text, cut)]), strip(text[cut:end])
+        if length(split(after)) < 3
+            push!(out, (text, stage)); continue
+        end
+        push!(out, (String(before), false)); push!(out, (String(after), :document))
+    end
+    return out
+end
+
 const UPON_NOTICE = r"(?i)upon\s+notice"
 const QUESTION_TIME = r"(?i)questions?\s+without\s+notice"
 const GENERIC_IDS = ("10000", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT")
@@ -232,6 +254,7 @@ function day_rules!(rows, h, date)
             set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
         end
     end
+    speech_owner!(rows, h)
     groups = Dict{Tuple{String,String},Vector{Int}}()
     order = Tuple{String,String}[]
     for (i, x) in enumerate(rows)
@@ -295,6 +318,33 @@ function day_rules!(rows, h, date)
     end
     written_questions!(rows, h)
     return merge_turns(rows, h)
+end
+
+# a <speech> element, and what lies within it: "/speech[10]/interjection[44]/talk.start/para" -> ("…/speech[10]", "interjection[44]/…")
+const SPEECH_PART = r"^(.*?/speech(?:\[\d+\])?)/(.*)$"
+
+"""#135: the source often marks a member's own words inside their speech as an `<interjection>` by them, not a
+`<continue>` (committee debates most of all). An interjection row inside a `<speech>` element, by the member who
+opens that speech (its first talk.start or talk.text with a member's own id), is their speech (§1). Rows that say
+"interjecting" are left alone."""
+function speech_owner!(rows, h)
+    haskey(h, :path) || return rows
+    nid = Symbol("name.id")
+    owner = Dict{String,String}()
+    for x in rows
+        r = x[1]
+        m = match(SPEECH_PART, string(r[h[:path]]))
+        isnothing(m) && continue
+        el, rest = m.captures[1], m.captures[2]
+        id = string(r[h[nid]])
+        if !haskey(owner, el) && startswith(rest, "talk.") && spoken_row(r, h)
+            owner[el] = real_id(r, h) ? id : ""
+        elseif isflag(r, h, :interjection_flag) && startswith(rest, "interject") && get(owner, el, "") == id && id != "" &&
+               !occursin(r"(?i)interjecting", string(r[h[:content]]))
+            set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
+        end
+    end
+    return rows
 end
 
 # "asked the Minister ..., upon notice", near the start (after "(Question No. 1109)" or a stray name fragment)

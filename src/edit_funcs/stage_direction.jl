@@ -17,6 +17,7 @@ function stage_direction(input_fn,output_fn,::Type{<:AbstractEditPhase})
     r"(?i)Leave granted",
     r"(?i)Senate adjourned"
     ]
+    opening = [Regex("^[\\s({\\[]*(?:" * sd.pattern * ")") for sd in stage_directions]
 
     open(output_fn, "w") do io
         write_row_to_io(io,string.(headers_))
@@ -24,13 +25,17 @@ function stage_direction(input_fn,output_fn,::Type{<:AbstractEditPhase})
             row_ = @. collect(row)
             row = row_[1]
             content = row[header_to_num[:content]]
-            for sd in stage_directions
-                if occursin(sd,content) || row[header_to_num[:chamber_flag]] == 3
+            # #134: a phrase counts where it opens the row, or anywhere in a short row; in a longer spoken
+            # row it is left for stage_pieces (#108) to split off, so the speech keeps its speaker
+            short = length(split(string(content))) <= 20
+            for (sd, op) in zip(stage_directions, opening)
+                hit = occursin(short ? sd : op, content)
+                if hit || row[header_to_num[:chamber_flag]] == 3
                     flag_indices,all_flags = find_all_flags(row,header_to_num)
                     for i in flag_indices
                         row[i] = 0
                     end
-                    if occursin(sd,content)
+                    if hit
                         row[header_to_num[:name]] = "N/A"
                         row[header_to_num[Symbol("name.id")]] = "N/A"
                     end

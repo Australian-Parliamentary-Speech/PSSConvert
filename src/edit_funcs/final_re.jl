@@ -27,13 +27,18 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             end
             content = row[header_to_num[:content]]
             # #108: stage directions inside a spoken row become rows of their own
-            pieces = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) ? stage_pieces(content) : [(content, false)]
+            pieces = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) ? document_pieces(stage_pieces(content)) : [(content, false)]
             for (text, stage) in pieces
                 piece, ptype, pres = row, nonspeech_type, presiding
                 if length(pieces) > 1
                     piece = copy(row)
                     piece[header_to_num[:content]] = text
-                    if stage
+                    if stage === :document
+                        # #134: the document after "The document read as follows" is the tabling member's (§3)
+                        set_type!(piece, header_to_num, :non_speech_flag)
+                        piece[header_to_num[Symbol("name.id")]] = isnothing(tabler) ? "N/A" : tabler
+                        ptype, pres = "incorporated", "N/A"
+                    elseif stage
                         set_type!(piece, header_to_num, :non_speech_flag)
                         piece[header_to_num[:name]] = "N/A"
                         piece[header_to_num[Symbol("name.id")]] = "N/A"
