@@ -210,7 +210,7 @@ real_id(r, h) = (nid = string(r[h[Symbol("name.id")]]); !isna(nid) && !(nid in G
 - Floor holder (all eras): an interjection by the member who holds the floor in that debate is their speech. Any
   speech, the chair's included, takes the floor.
 - Questions upon notice (before 1981): a subdebate whose first spoken row is a question "upon notice" is a printed
-  question and answer: non-speech, chamber_flag 3, ids kept (§4, decided 2026-11-10; the question becomes
+  question and answer, quote rows included (#132): non-speech, chamber_flag 3, ids kept (§4, decided 2026-11-10; the question becomes
   written_question and the reply written_answer in written_questions!, #127), up to an
   oral supplementary ("Arising out of the answer ...").
 - Question time in the 1981-1997 SGML conversion, where the source marks no questions or answers: in each
@@ -245,8 +245,11 @@ function day_rules!(rows, h, date)
         isempty(spoken) && continue
         first_text = first(string(rows[spoken[1]][1][h[:content]]), 300)
         if yr < 1981 && occursin(UPON_NOTICE, first_text)
-            for i in spoken
+            for i in idx
+                i < spoken[1] && continue
                 r = rows[i][1]
+                # the printed text of the question or answer can be a quote row (#132)
+                ((spoken_row(r, h) && string(r[h[nid]]) != "10000") || isflag(r, h, :quote_flag)) || continue
                 # an oral supplementary ("Arising out of the answer, may I ask ...") ends the printed answer
                 occursin(r"(?i)^\s*arising\s+out\s+of", string(r[h[:content]])) && break
                 set_type!(r, h, :non_speech_flag)
@@ -263,6 +266,7 @@ function day_rules!(rows, h, date)
             end
         end
     end
+    questions_on_notice!(rows, h)
     # words that lost their speaker, and petitions, before turns are merged
     last, ltopic, after_doc = nothing, nothing, false
     for x in rows
@@ -300,6 +304,53 @@ const READS_OUT = r"(?i)\basked\s+the\s+following\s+questions?\b"
 const READS_OUT_END = r"(?i)asked\s+the\s+following\s+questions?[\s,.:;—–-]*(?:upon\s+notice)?[\s,.:;—–-]*$"
 # the start of a minister's reply, or a reply that still opens with the minister's name ("Mr. Fairbairn.-")
 const ANSWER_TEXT = r"(?i)^(?:\s*(?:mr|mrs|dr|sir|senator)\.?\s*[a-z][\w'-]+\.?\s*[-—–]|.{0,160}?(?:\banswers?\s+to\s+the\s+(?:right\s+)?hono(?:u)?rable|\bhas\s+(?:now\s+)?(?:provided|supplied|furnished)\b|\bthe\s+answers?\s+(?:is|are)\b))"
+
+# the first paragraph of a <question> element (in its talk.start or talk.text, perhaps after a <continue>);
+# captures the parent element's path and the question element
+const QUESTION_START = r"^(.*)/(question(?:\[\d+\])?)/(?:continue(?:\[\d+\])?/)?talk\.(?:start|text)\b"
+
+"""#132: a printed question on notice that sits in a <question> element outside an answers-to-questions section
+(after oral questions before 1981, in a `qwn` block or `rdi.item` in 1981-1997, in the Senate's Questions on
+Notice debate from 1998). A spoken row that opens "asked the ..., upon notice" and is the first paragraph of a
+<question> starts a printed question and answer: it and the spoken or quote rows after it under the same parent become non-speech,
+chamber_flag 3, written_answer, until a different <question> begins, a spoken row under the parent is neither this
+question nor an <answer>, the rows leave the parent, or an oral supplementary starts ("Arising out of ...").
+Unnamed `other` rows in the block become written_answer too. written_questions! then splits question and answer."""
+function questions_on_notice!(rows, h)
+    haskey(h, :path) || return rows
+    nid = Symbol("name.id")
+    i = 1
+    while i <= length(rows)
+        r = rows[i][1]
+        m = match(QUESTION_START, string(r[h[:path]]))
+        content = first(string(r[h[:content]]), 300)
+        if isnothing(m) || !spoken_row(r, h) || !occursin(ASKED, content) || !occursin(UPON_NOTICE, content)
+            i += 1
+            continue
+        end
+        parent, qel = m.captures[1] * "/", m.captures[2]
+        j = i
+        while j <= length(rows)
+            x = rows[j]
+            p = string(x[1][h[:path]])
+            startswith(p, parent) || break
+            child = first(split(p[length(parent)+1:end], '/'))
+            if spoken_row(x[1], h) || isflag(x[1], h, :quote_flag)
+                (child == qel || startswith(child, "answer")) || break
+                j > i && occursin(r"(?i)^\s*arising\s+out\s+of", string(x[1][h[:content]])) && break
+                set_type!(x[1], h, :non_speech_flag)
+                x[1][h[:chamber_flag]] = 3
+                x[3] = "written_answer"
+            elseif x[3] == "other" && isna(x[1][h[:name]]) && isna(x[1][h[nid]])
+                x[1][h[:chamber_flag]] = 3
+                x[3] = "written_answer"
+            end
+            j += 1
+        end
+        i = max(j, i + 1)
+    end
+    return rows
+end
 
 """#127: in a block of written questions and answers, the question is non-speech written_question and the
 minister's reply stays written_answer. In order:
