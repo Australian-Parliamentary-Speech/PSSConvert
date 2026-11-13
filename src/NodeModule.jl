@@ -81,6 +81,40 @@ function detect_phase(date, which_house)
 end
 
 """
+detect_phase(date, which_house, soup)
+
+Chooses the phase from the file's layout, using the date only where the layout doesn't decide it (#129):
+- an SGML conversion (rooted in `<html>`, or with no `<session.header>`) is `PhaseSGML`;
+- ParlInfo XML with more `<p>` than `<para>` paragraphs is `AbstractPhase`;
+- other ParlInfo XML is `Phase2011`.
+
+A date-registered phase other than these three is kept, so a phase added for particular dates still wins.
+"""
+function detect_phase(date, which_house, soup)
+    by_date = detect_phase(date, which_house)
+    by_layout = layout_phase(soup)
+    (isnothing(by_layout) || !(by_date in LAYOUT_PHASES())) && return by_date
+    return by_layout
+end
+
+LAYOUT_PHASES() = (AbstractPhase, Phase2011, PhaseSGML)
+
+"""
+    layout_phase(soup)
+
+The phase that matches the layout of the document whose root is `soup`, or `nothing` if `soup` isn't a document root.
+"""
+function layout_phase(soup)
+    soup isa EzXML.Node || return nothing
+    (nodename(soup) == "html" || isnothing(findfirst("session.header", soup))) && return PhaseSGML
+    n_p = countelements_named(soup, "p")
+    n_para = countelements_named(soup, "para")
+    return n_p > n_para ? AbstractPhase : Phase2011
+end
+
+countelements_named(soup, name) = length(findall("//$name", soup))
+
+"""
     detect_phase_senate(date)
 
 Looks up `date` in `date_to_phase_senate`; falls back to `detect_phase_house`

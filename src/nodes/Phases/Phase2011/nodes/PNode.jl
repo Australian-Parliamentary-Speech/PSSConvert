@@ -26,6 +26,13 @@ function is_first_node_type(node::Node{PNode{Phase2011}},parent_node,allowed_nam
     if typeof(parent_node) <: Node{<:MotionnospeechNode}
         return true
     end
+    # a <talk.start> holding only the <talker>: the turn's first paragraph follows it (#130)
+    if hasprevelement(node.node)
+        prev = prevelement(node.node)
+        if nodename(prev) == "talk.start" && !any(c -> nodename(c) == "para", eachelement(prev))
+            return true
+        end
+    end
     if !hasprevnode(node.node)
         return true
     else

@@ -278,7 +278,7 @@ function run_xml(fn, output_path, xml_parsing, csv_edit, edit_funcs, which_house
     logger = log_setup(date, log_temp_dir)
     log_debug(logger, "$date debugging messages \n")
 
-    PhaseType = detect_phase(date_float, which_house)
+    PhaseType = detect_phase(date_float, which_house, soup)
     outputcsv = joinpath(output_path, "$date.csv")
     if xml_parsing
         open(outputcsv, "w") do io

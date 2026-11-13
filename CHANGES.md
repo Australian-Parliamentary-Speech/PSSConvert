@@ -36,3 +36,10 @@ the row, so existing columns keep their positions.
   `non_speech_flag = 1`; some were flagged as speech (Australian-Parliamentary-Speech/PSSConvert#89).
 - `content` keeps double quotes (written as `""` inside the quoted CSV field) and has no leading or
   trailing spaces (Australian-Parliamentary-Speech/PSSConvert#83, Australian-Parliamentary-Speech/PSSConvert#84).
+- The way a day's XML is read is chosen from the file's layout, with the date used only where the layout
+  doesn't decide it. Five 1981-1997 days held as ParlInfo XML (House 13/05/1985, 13/05/1991, 30/05/1996,
+  20/11/1996 and Senate 28/11/1996) were read as SGML conversions; they now gain interjection and petition
+  rows, and up to 2.6 percentage points more of their XML's words (Australian-Parliamentary-Speech/PSSConvert#129).
+- A turn whose first paragraph follows a `<talk.start>` that holds only the talker now gets that talker's
+  name and id; before, the whole turn could have none (369 turns in 59 files, Senate 20/09/1907 most of
+  all) (Australian-Parliamentary-Speech/PSSConvert#130).
