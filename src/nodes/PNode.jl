@@ -22,14 +22,12 @@ function construct_row(node::Node{<:PNode},node_tree)
     phase = get_phasetype(node)
     debateinfo =  find_section_title(node_tree,node.soup,DebateNode{phase})
     subdebateinfo =  find_section_title(node_tree,node.soup,SubdebateNode{phase})
+    content = get_node_content(node,node.node.content)
+    # an <item label="(a)"> keeps its label at the start of the content (#119)
     label = find_item(node)
-    if !isnothing(label)
-        content = label*node.node.content
-    else
-        content = node.node.content
+    if !isnothing(label) && !isempty(strip(label))
+        content = strip(label)*" "*lstrip(content)
     end
-
-    content = get_node_content(node,content)
 
     node.headers_dict["content"] = content
     node.headers_dict["subdebateinfo"] = subdebateinfo
