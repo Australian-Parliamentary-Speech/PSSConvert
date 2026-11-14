@@ -258,7 +258,7 @@ end
 
 const UPON_NOTICE = r"(?i)upon\s+notice"
 const QUESTION_TIME = r"(?i)questions?\s+without\s+notice"
-const GENERIC_IDS = ("10000", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT", "GOVERNOR-GENERAL")
+const GENERIC_IDS = ("10000", "10001", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT", "GOVERNOR-GENERAL")
 year_of(date) = something(tryparse(Int, first(string(date), 4)), 0)
 spoken_row(r, h) = any(f -> isflag(r, h, f), SPOKEN_FLAGS)
 real_id(r, h) = (nid = string(r[h[Symbol("name.id")]]); !isna(nid) && !(nid in GENERIC_IDS))
@@ -376,6 +376,8 @@ function day_rules!(rows, h, date)
     end
     # #142: the text moved after "I move:" is a quote by the mover
     rows = motion_after!(rows, h)
+    # #157: petitions the Clerk lodges, and the Clerk's own words, have 10001
+    clerk_petitions!(rows, h, date)
     written_questions!(rows, h)
     return merge_turns(rows, h)
 end
@@ -526,6 +528,12 @@ function merge_turns(rows, h)
     for x in rows
         r, ptype = x[1], x[3]
         mergeable = ptype == "N/A" || ptype in ("written_answer", "written_question", "incorporated")
+        # #157: one row per petition: petition rows join only within the same <petition> element
+        if mergeable && isflag(r, h, :petition_flag) && !isempty(out)
+            pel(p) = (m = match(r"^(.*?/petition(?:\[\d+\])?)(?:/|$)", string(p)); isnothing(m) ? nothing : m.captures[1])
+            a_, b_ = pel(out[end][1][h[:path]]), pel(r[h[:path]])
+            mergeable = !isnothing(a_) && a_ == b_
+        end
         if !isempty(out) && mergeable && out[end][3] == ptype && sig(out[end][1]) == sig(r) &&
            !(isna(r[h[:name]]) && isna(r[h[nid]]) && ptype == "N/A")
             prev = out[end][1]
@@ -542,4 +550,54 @@ function turn_key(row, h)
     isflag(row, h, :non_speech_flag) && return nothing
     nid = string(row[h[Symbol("name.id")]])
     return isna(nid) || nid == "UNKNOWN" ? "name:" * string(row[h[:name]]) : nid
+end
+
+const CLERK = r"(?i)\bclerk\b"
+const LODGED = r"(?i)lodged\s+for\s+presentation|petitions?\s+(?:has|have)\s+been\s+lodged"
+
+# the line naming who presented a petition: "by Sir John Cramer, Mr Fulton and Mr Turner.", "by MrDrury, Dr Gun …"
+const PETITION_BY = r"\bby\s+((?:Sir\s+[A-Z][\w'’\-]+\s+[A-Z][\w'’\-]+)|(?:Mr|Mrs|Ms|Miss|Dr|Senator)\.?\s*(?:[A-Z]\.\s*)*[A-Z][\w'’\-]+(?:\s+[A-Z][\w'’\-]+)?)"
+
+"""#157 (decided 15/11/2026): a petition is the words of whoever presented it. The Clerk has the fixed id 10001.
+A petition with its own presenter in the XML (see `petition_presenter`) keeps that member's id. A petition in the
+Clerk's list ("Petitions have been lodged for presentation as follows …") takes the first member named in its
+"by …" line, and 10001 where no member is named."""
+function clerk_petitions!(rows, h, date)
+    nid = Symbol("name.id")
+    house = CURRENT_HOUSE[]
+    dids = day_ids([x[1] for x in rows], h)
+    lodged, ltopic, pending = false, nothing, Int[]
+    function settle!(id, name)
+        for k in pending
+            rows[k][1][h[nid]] = id
+            isna(rows[k][1][h[:name]]) && (rows[k][1][h[:name]] = name)
+        end
+        empty!(pending)
+    end
+    for (k, x) in enumerate(rows)
+        r = x[1]
+        t = string(r[h[:debateinfo]])
+        if t != ltopic
+            settle!("10001", "The Clerk")
+            lodged, ltopic = false, t
+        end
+        name = string(r[h[:name]])
+        content = string(r[h[:content]])
+        if occursin(CLERK, name) && !occursin(r"(?i)\bdeputy\s+president|minister", name) &&
+           (spoken_row(r, h) || isflag(r, h, :petition_flag))
+            r[h[nid]] = "10001"
+            occursin(LODGED, content) && (lodged = true)
+        elseif isflag(r, h, :petition_flag) && (isna(r[h[nid]]) || string(r[h[nid]]) == "UNKNOWN") && lodged
+            # a new petition begins: the last one named no presenter
+            occursin(r"^\s*To\s+the\s+Hono", content) && !isempty(pending) && settle!("10001", "The Clerk")
+            push!(pending, k)
+            m = match(PETITION_BY, content)
+            if !isnothing(m)
+                id = resolve_id(m.captures[1], house, date, dids)
+                isnothing(id) ? settle!("10001", "The Clerk") : settle!(id, String(m.captures[1]))
+            end
+        end
+    end
+    settle!("10001", "The Clerk")
+    return rows
 end
