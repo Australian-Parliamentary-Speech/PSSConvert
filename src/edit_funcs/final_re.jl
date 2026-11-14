@@ -50,7 +50,8 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             # #134: a document belongs to whoever presented it (§3): the last member to speak, or the Speaker or
             # President when they say "I present"; a presiding officer who only grants leave tables nothing
             if spoken_
-                presenter = nid == "10000" && occursin(PRESENTS, string(row[header_to_num[:content]])) ? "10000" : tabler
+                # a presiding officer who has said "I present" stays the presenter while they go on speaking
+                presenter = nid == "10000" && (occursin(PRESENTS, string(row[header_to_num[:content]])) || presenter == "10000") ? "10000" : tabler
             end
             # #137: a speaker heading printed in the text starts a new speech by that member
             segs = SPLIT_TYPES(row, header_to_num, nonspeech_type) ?
@@ -74,7 +75,8 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             content = srow[header_to_num[:content]]
             # #108: stage directions inside a spoken row become rows of their own
             pieces = any(f -> isflag(srow,header_to_num,f), SPOKEN_FLAGS) ? motion_pieces(document_pieces(stage_pieces(content))) :
-                     isflag(srow,header_to_num,:motionnospeech_flag) ? motion_pieces([(content, false)]) : [(content, false)]
+                     isflag(srow,header_to_num,:motionnospeech_flag) ? motion_pieces([(content, false)]) :
+                     stype == "procedural" ? procedural_pieces(content) : [(content, false)]
             for (text, stage) in pieces
                 piece, ptype, pres = srow, stype, spres
                 if length(pieces) > 1

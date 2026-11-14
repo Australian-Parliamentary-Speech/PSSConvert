@@ -82,3 +82,13 @@ the row, so existing columns keep their positions.
     ("I give notice that …") stays the member's speech;
   - the Governor-General's opening speech is `speech_flag = 1` with the new fixed `name.id` `GOVERNOR-GENERAL`, as
     presiding officers have `10000`; the House's reprint of it is `incorporated` with that id.
+- Short procedural lines worded with a qualifier ("Amendment, by leave, withdrawn.", "Question, as amended,
+  agreed to.", "Amendment (by Sir George Turner) agreed to-") are non-speech `procedural` with no id, one row per
+  step, instead of spoken rows with `UNKNOWN` (Australian-Parliamentary-Speech/PSSConvert#146).
+- A speaker heading whose title the OCR garbled ("Mi-. THOMSON.-", "Mir. DEAKIN.-", "Mr.-KELLY.-") or that gives
+  initials ("Mr. L. E. GROOM") now starts a turn with the member's id, as in Australian-Parliamentary-Speech/PSSConvert#137
+  (Australian-Parliamentary-Speech/PSSConvert#147).
+- Convention decided on 14/11/2026: a passage a member quotes in a speech, question or answer is
+  `quote_flag = 1` with the member's `name` and `name.id`, in every era. From 2011, where the XML prints it in
+  small type, the parser finds it when it opens with a quotation mark or an ellipsis or follows a paragraph that
+  ends in a colon (Australian-Parliamentary-Speech/PSSConvert#148).
