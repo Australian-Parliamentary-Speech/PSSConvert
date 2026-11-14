@@ -200,6 +200,10 @@ function stage_pieces(content)
     return [p for p in pieces if !isempty(p[1])]
 end
 
+# a presiding officer presenting a paper ("I present the Selection Committee's report"), and a bill link used as an id
+const PRESENTS = r"(?i)\bI\s+(?:now\s+)?(?:present|table|lay\s+on\s+the\s+table)\b"
+const BILL_LINK = r"^[rs]\d+$"
+
 # the editor's note that a document follows: in the past tense, or in brackets ("(The document reads as follows)");
 # "The letter reads as follows" without brackets is spoken
 const DOC_NOUN = raw"(?:document|answer|table|statement|speech|speeche|letter|list|schedule|report|eulogy|tribute|attachment|response|paper)s?"

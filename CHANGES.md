@@ -49,3 +49,14 @@ the row, so existing columns keep their positions.
   earlier-era written question or answer is now non-speech too. Across the corpus this moves 2.6 million
   words from spoken types to written ones on 4,240 days; no words are added or lost
   (Australian-Parliamentary-Speech/PSSConvert#132).
+- A stage-direction phrase ("Senate adjourned", "Leave granted", …) no longer blanks a whole row wherever it
+  appears: it counts at the start of a row, or anywhere in a row of 20 words or fewer, and inside a longer
+  speech it is split off as its own row, so the speech keeps its speaker and type. The note "The document read
+  as follows" inside a spoken row is now a non-speech row of its own with no id, and the document after it is
+  `incorporated`, with the id of whoever presented it: the last member to speak, or `10000` when the Speaker or
+  President says "I present" or "I table". About 1.56 million words, mostly tabled papers, ministry lists and
+  Selection Committee reports, move from speech or quote to `incorporated`
+  (Australian-Parliamentary-Speech/PSSConvert#134).
+- A member's own words inside their speech that the source marks `<interjection>` are now `speech`, not
+  `interjection`: about 476,000 words, most in the Senate before 1981; true interjections ("Mr X
+  interjecting") are unchanged (Australian-Parliamentary-Speech/PSSConvert#135).
