@@ -117,7 +117,8 @@ const VOCATIVE = r"(?i)^(?:mr|madam)\.?\s+(?:acting\s+)?(?:deputy\s+)?(?:speaker
 own id, it moves to presiding_phid. Returns the presiding_phid value."""
 function presiding_id!(row, h, presiding)
     name = string(row[h[:name]])
-    spoken = any(f -> isflag(row, h, f), SPOKEN_FLAGS)
+    # a passage the presiding officer quotes or moves is theirs too, with 10000 (#148)
+    spoken = any(f -> isflag(row, h, f), SPOKEN_FLAGS) || isflag(row, h, :quote_flag)
     (spoken && !isnothing(presiding_office(name)) && !occursin(NOT_PRESIDING, name) && !occursin(VOCATIVE, name)) || return presiding
     nid = string(row[h[Symbol("name.id")]])
     if !(nid == "10000" || isna(nid)) && presiding == "N/A"
