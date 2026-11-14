@@ -74,7 +74,8 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             content = srow[header_to_num[:content]]
             # #108: stage directions inside a spoken row become rows of their own
             pieces = any(f -> isflag(srow,header_to_num,f), SPOKEN_FLAGS) ? motion_pieces(document_pieces(stage_pieces(content))) :
-                     isflag(srow,header_to_num,:motionnospeech_flag) ? motion_pieces([(content, false)]) : [(content, false)]
+                     isflag(srow,header_to_num,:motionnospeech_flag) ? motion_pieces([(content, false)]) :
+                     stype == "procedural" ? procedural_pieces(content) : [(content, false)]
             for (text, stage) in pieces
                 piece, ptype, pres = srow, stype, spres
                 if length(pieces) > 1

@@ -65,7 +65,12 @@ function nonspeech_kind(row, h)
 end
 
 # anchored at the start, so a long row is still procedural when it carries the motion or clause text it reports
-is_procedural(content) = occursin(PROCEDURAL_LINE, content) || occursin(PROCEDURAL_EXTRA, content)
+is_procedural(content) = occursin(PROCEDURAL_LINE, content) || occursin(PROCEDURAL_EXTRA, content) ||
+                         (occursin(PROCEDURAL_QUALIFIED, content) && length(split(content)) <= 60)
+
+# #146: the same record with a qualifier before the verb: "Amendment, by leave, withdrawn.", "Question, as amended,
+# agreed to.", "Amendment (by Sir George Turner) agreed to-", "Proposed vote agreed to."
+const PROCEDURAL_QUALIFIED = r"(?i)^(?:question|amendments?|(?:new\s+|postponed\s+)?(?:sub-?)?clauses?|motion|bill|schedule|title|preamble|requests?|proposed\s+votes?|votes?|items?|divisions?)\b(?:\s+[^\s,.!?()]+){0,4}?(?:\s*,[^,.!?]{1,40},)?(?:\s*\([^)]{1,60}\))?\s*,?\s*(?:agreed\s+to|negatived|withdrawn|reported|not\s+insisted\s+(?:on|upon)|insisted\s+(?:on|upon)|lapsed)\b"
 
 "Applies #93, #94, #89, #96 and #95 to one row and returns its nonspeech_type"
 function apply_conventions!(row, h)
@@ -166,6 +171,21 @@ const STAGE_SENTENCE = r"(?i)^(?:debate\s+(?:\(on\s+motion\s+by\s+[^)]{2,60}\)\s
 # a sentence ends at . ! ? or a closing bracket before a capital, an opening bracket or "by leave"; or at a dash before a
 # capital, including a hyphen run onto the full stop when rows are joined ("affirmative.-I move")
 const SENTENCE_BREAK = r"(?<=[.!?)\]}])\s+(?=[A-Z({\[]|by\s+leave)|(?<=[—–])\s*(?=[A-Z])|(?<=[.!?])-(?=[A-Z])"
+
+"""#146: a procedural row that records several steps ("Amendment, as amended, agreed to. Clause, as amended, agreed to.
+Title agreed to.") is one row per step, as stage directions are (§3), when every sentence in it is procedural."""
+function procedural_pieces(content)
+    text = strip(string(content))
+    cuts = [0]
+    for m in eachmatch(SENTENCE_BREAK, text)
+        push!(cuts, m.offset + ncodeunits(m.match) - 1)
+    end
+    push!(cuts, ncodeunits(text))
+    sents = [String(strip(text[nextind(text, cuts[i]):thisind(text, cuts[i+1])])) for i in 1:length(cuts)-1 if cuts[i] < cuts[i+1]]
+    sents = [x for x in sents if !isempty(x)]
+    (length(sents) < 2 || !all(x -> is_procedural(x) || occursin(STAGE_SENTENCE, x), sents)) && return [(String(text), false)]
+    return [(x, true) for x in sents]
+end
 
 """#108: splits a spoken row's content into pieces, marking the whole sentences that are stage directions (§1, §3).
 A sentence counts only if the stage-direction phrase covers all but at most 8 of its words. The spoken pieces

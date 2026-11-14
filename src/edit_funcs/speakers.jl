@@ -65,7 +65,17 @@ function resolve_id(name, house, date, dids)
         cands = unique([p for (p, s, e, n) in get(members(), (house, two), []) if s <= date <= e])
         length(cands) == 1 && return cands[1]
     end
-    return member_by_surname(house, date, join(w, " "))
+    p = member_by_surname(house, date, join(w, " "))
+    !isnothing(p) && return p
+    # #147: initials printed before the surname ("Mr. L. E. GROOM") choose between members who share it
+    inits = [m.captures[1] for m in eachmatch(r"\b([A-Z])\.", replace(s, r"^(?:Mr|Mrs|Ms|Dr|Sir|Senator)\.?\s*" => ""))]
+    isempty(inits) && return nothing
+    cands = unique([(p, n) for (p, s0, e, n) in get(members(), (house, lowercase(w[end])), []) if s0 <= date <= e])
+    given(n) = [t for t in split(replace(split(n, ","; limit=2)[end], r"\([^)]*\)" => ""), r"[\s.]+")
+                if length(t) > 1 && !(t in ("the", "hon", "rt", "sir", "dr", "dame", "lady", "kc", "qc", "ac", "ao", "am"))]
+    hit = [p for (p, n) in cands if length(given(n)) >= length(inits) &&
+           all(lowercase(inits[i]) == string(given(n)[i][1]) for i in eachindex(inits))]
+    return length(hit) == 1 ? hit[1] : nothing
 end
 
 "#136: fills name.id for a named spoken row that has none. Returns true if it did."
@@ -81,8 +91,10 @@ end
 
 # #137: a speaker heading printed in the text, at the start of the row or of a sentence:
 # title, name in capitals, then an optional electorate and time, then ".-" (or "." straight onto the next word)
-const HEAD_TITLE = raw"(?:Mr\.?|Mrs\.?|Dr\.?|Senator|Col\.?|Colonel|Major|Captain|General|Sir)(?:\s*(?:Sir|Major|Colonel|Col\.|Dr\.?|the\s+Hon\.?))?"
-const HEAD_NAME = raw"(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]{2,}(?:\s+(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]+){0,3}"
+# #147: the OCR often garbles "Mr." ("Mi.", "Mir.", "Mi-.", "Mr.-"), and a heading can give initials ("Mr. L. E. GROOM")
+const HEAD_TITLE = raw"(?:Mr\.?\s*-\.?|Mir?\s*[.\-]{1,3}|Mir\b|Mr\.?|Mrs\.?|Dr\.?|Senator|Col\.?|Colonel|Major|Captain|General|Sir)(?:\s*(?:Sir|Major|Colonel|Col\.|Dr\.?|the\s+Hon\.?))?"
+const HEAD_NAME = raw"(?:[A-Z]\.\s*){0,3}(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]{2,}(?:\s+(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]+){0,3}"
+const GARBLED_MR = Regex("^(?:Mr\\.?\\s*-\\.?|Mir?\\s*[.\\-]{1,3}|Mir\\b)\\s*")
 const HEAD_TAIL = raw"\s*(?:,?\s*\([^)]{2,40}\)?)?\s*(?:\[[^\]]{1,15}?\]?|\(\d{1,2}[.:]\s*\d{2}[^)]{0,8}\))?"
 const SPEAKER_HEAD = Regex("(?:^|(?<=[.!?:\"'”’)\\]])\\s+)(" * HEAD_TITLE * "\\s*" * HEAD_NAME * ")" * HEAD_TAIL *
                            raw"(?:\.?\s*[-—–]+\s*|\.(?=[A-Z]))")
@@ -98,7 +110,8 @@ function speaker_segments(content, house, date, dids)
     text = string(content)
     heads = Tuple{Int,Int,String,String}[]   # (start, stop, id, name)
     for re in (SPEAKER_HEAD, SPEAKER_HEAD_SGML), m in eachmatch(re, text)
-        name = strip(m.captures[1])
+        # #147: a garbled "Mr." is read as "Mr"
+        name = strip(replace(strip(m.captures[1]), GARBLED_MR => "Mr "))
         nm = replace(name, Regex("^" * HEAD_TITLE * "\\s*") => "")
         occursin(NOT_HEAD_NAME, nm) && continue
         id = resolve_id(name, house, date, dids)
