@@ -225,6 +225,9 @@ function find_talker_in_p(p_node::Node{<:PNode})
         p_talker_id = findfirst_in_subsoup(p_talker_soup.path,"/@href",p_node.soup)
 #        p_talker = isnothing(p_talker) ? "N/A" : p_talker.content
         p_talker_id = isnothing(p_talker_id) ? "N/A" : p_talker_id.content
+        # #139: a web link in the paragraph is not a talker
+        p_talker_text = p_talker isa AbstractString ? p_talker : (isnothing(p_talker) ? "" : p_talker.content)
+        occursin(r"(?i)https?:|https?//|www\.|\.gov\b|\.com\b|\.org\b|\.au\b", p_talker_text * " " * p_talker_id) && return
         p_node.headers_dict["name"] = clean_text(p_talker)
         p_node.headers_dict["name.id"] = clean_text(p_talker_id)
     end

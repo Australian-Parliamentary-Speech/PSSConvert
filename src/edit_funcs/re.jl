@@ -34,7 +34,8 @@ function final_name_attempt(row,header_to_num)
     content = row[header_to_num[:content]]
     split_content = split(content,r"\.\s*-")
     maybe_name = clean_text(split_content[1])
-    if length(split_content) == 2 && is_name(maybe_name) && row[header_to_num[:name]] == "N/A"
+    # #139: only text that reads as a speaker ("Prime Minister's. - Of the estimated ..." is a heading)
+    if length(split_content) == 2 && is_name(maybe_name) && looks_like_speaker(maybe_name) && row[header_to_num[:name]] == "N/A"
         occur = @. occursin(all_titles_, maybe_name)
         if !iszero(occur) && !(is_part_speech(maybe_name))
             row[header_to_num[:name]] = maybe_name
@@ -87,7 +88,8 @@ function find_speaker_content(row,header_to_num)
         speaker = match(re,content)
         if !isnothing(speaker)
             speaker = speaker.match
-            if !is_part_speech(speaker)
+            # #139: "Mr Bury said:" or "Dear Sir:" opens a quotation or a letter, not a turn
+            if !is_part_speech(speaker) && looks_like_speaker(strip(speaker, [':', ' ']))
                 row[header_to_num[:name]] = clean_text(speaker)
                 content = replace_known_beginning(content,speaker)
                 row[header_to_num[:content]] = content

@@ -60,3 +60,16 @@ the row, so existing columns keep their positions.
 - A member's own words inside their speech that the source marks `<interjection>` are now `speech`, not
   `interjection`: about 476,000 words, most in the Senate before 1981; true interjections ("Mr X
   interjecting") are unchanged (Australian-Parliamentary-Speech/PSSConvert#135).
+- A spoken row that names a member but has no `name.id` now gets the member's id: the one id that surname has
+  elsewhere in the same day, else the one member of that chamber with that surname serving that day. Spoken
+  words named but with no id fall from about 2.06 million to 254,000, most of them in the 1900s
+  (Australian-Parliamentary-Speech/PSSConvert#136).
+- A speaker heading printed inside the text ("Senator CLEMONS (Tasmania).-While I agree …") now starts a new
+  `speech` row by that member, where the member can be identified, and the heading leaves `content` (about 32,000
+  words of headings in the House). Words in rows that still start with a printed heading fall from about 963,000
+  to 504,000 (Australian-Parliamentary-Speech/PSSConvert#137).
+- Rows whose `content` was the literal text `N/A` (empty paragraphs in the source, about 48,000 rows) are no
+  longer written (Australian-Parliamentary-Speech/PSSConvert#138).
+- Department headings ("Prime Minister's Department"), letter salutations ("Dear Sir", "To Mr. Gregory"),
+  reported speech ("Mr Bury said:") and web links are no longer taken as the speaker's `name` (about 200,000
+  words); the text stays with the speaker or document it belongs to (Australian-Parliamentary-Speech/PSSConvert#139).
