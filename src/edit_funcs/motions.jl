@@ -24,7 +24,8 @@ function motion_end(text)
     for m in eachmatch(r"[.!?][\"'”’]?\s+(?=[A-Z])", text)
         word = lowercase(something(match(r"([\w.]+)$", text[1:prevind(text, m.offset)]), (captures=[""],)).captures[1])
         (word in NOT_SENTENCE_END || (length(word) == 1 && isletter(word[1]))) && continue  # "Mr K. J. Thomson"
-        return m.offset + ncodeunits(rstrip(m.match)) - 1
+        # the last character of the motion (a closing quote such as ” takes several bytes)
+        return thisind(text, m.offset + ncodeunits(rstrip(m.match)) - 1)
     end
     return lastindex(text)
 end
