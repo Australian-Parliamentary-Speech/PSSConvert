@@ -7,15 +7,23 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
     house = CURRENT_HOUSE[]
     date = something(match(r"\d{4}-\d{2}-\d{2}", basename(input_fn)), (match="N/A",)).match
     heads = day_heads(rows, header_to_num, house, date)
+    dids = day_ids(rows, header_to_num)
 
     open(output_fn, "w") do io
         write_row_to_io(io,[string.(headers_)..., "presiding_phid", "nonspeech_type", "turn_no"])
         turn, last_key, prev_wa, doc, tabler, presenter = 0, nothing, nothing, nothing, nothing, nothing
         built = Vector{Vector{Any}}()
         for row in rows
+            # #139: a heading, salutation or link taken as the speaker's name is no name
+            name_ = row[header_to_num[:name]]
+            if !isna(name_) && isna(row[header_to_num[Symbol("name.id")]]) && !looks_like_speaker(name_)
+                row[header_to_num[:name]] = "N/A"
+            end
             row = if_speaker_then_speech(row,header_to_num)
             row = final_add_from_Speaker(row,header_to_num)
             row = edit_row_final(row,header_to_num)
+            # #136: a member named with no id gets the id from the same day or the members list
+            fill_id!(row,header_to_num,house,date,dids)
             presiding = presiding_phid!(row,header_to_num,house,date,heads)
             presiding = presiding_id!(row,header_to_num,presiding)
             nonspeech_type = apply_conventions!(row,header_to_num)
@@ -32,13 +40,32 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             if spoken_
                 presenter = nid == "10000" && occursin(PRESENTS, string(row[header_to_num[:content]])) ? "10000" : tabler
             end
-            content = row[header_to_num[:content]]
+            # #137: a speaker heading printed in the text starts a new speech by that member
+            segs = SPLIT_TYPES(row, header_to_num, nonspeech_type) ?
+                   speaker_segments(row[header_to_num[:content]], house, date, dids) : [(row[header_to_num[:content]], nothing, nothing)]
+            for (k, (stext, sid, sname)) in enumerate(segs)
+            srow, stype, spres = row, nonspeech_type, presiding
+            if length(segs) > 1 || !isnothing(sid)
+                srow = copy(row)
+                srow[header_to_num[:content]] = stext
+                if !isnothing(sid)
+                    set_type!(srow, header_to_num, :speech_flag)
+                    srow[header_to_num[:name]] = sname
+                    srow[header_to_num[Symbol("name.id")]] = sid
+                    for col in (:electorate, :party, :role)
+                        haskey(header_to_num, col) && (srow[header_to_num[col]] = "N/A")
+                    end
+                    stype, spres = "N/A", "N/A"
+                    tabler, presenter = sid, sid
+                end
+            end
+            content = srow[header_to_num[:content]]
             # #108: stage directions inside a spoken row become rows of their own
-            pieces = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) ? document_pieces(stage_pieces(content)) : [(content, false)]
+            pieces = any(f -> isflag(srow,header_to_num,f), SPOKEN_FLAGS) ? document_pieces(stage_pieces(content)) : [(content, false)]
             for (text, stage) in pieces
-                piece, ptype, pres = row, nonspeech_type, presiding
+                piece, ptype, pres = srow, stype, spres
                 if length(pieces) > 1
-                    piece = copy(row)
+                    piece = copy(srow)
                     piece[header_to_num[:content]] = text
                     if stage === :note
                         # #134: the note is a row of its own, and the rows after it are the document (#105)
@@ -60,7 +87,9 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
                         ptype, pres = occursin(DIVISION, text) ? "division" : "procedural", "N/A"
                     end
                 end
-                piece[header_to_num[:content]] != "" && push!(built, Any[piece, pres, ptype])
+                # #138: a row with no words (an empty paragraph, written as "N/A") is not kept
+                isna(strip(string(piece[header_to_num[:content]]))) || push!(built, Any[piece, pres, ptype])
+            end
             end
         end
         built = day_rules!(built, header_to_num, date)
