@@ -346,12 +346,25 @@ function day_rules!(rows, h, date)
             set_type!(r, h, last[3]; clear=SPOKEN_FLAGS)
             r[h[:name]], r[h[nid]] = last[1], last[2]
             x[3] = "N/A"
+        elseif in_list && isflag(r, h, :quote_flag) && !occursin(r"\b(?:I|we|my|our|me|us)\b", content) &&
+               !occursin(r"^\s*\(\s*(?:\d{1,3}|[a-zA-Z]|[ivxIVX]{1,5})\s*\)", content) && !occursin(r"^\s*That\b", content)
+            # #153 (decided 14/11/2026): the items of a list of papers or reports printed under "the following …:"
+            # are not spoken: non-speech, no id
+            set_type!(r, h, :non_speech_flag)
+            r[h[:name]], r[h[nid]] = "N/A", "N/A"
+            x[3] = "other"
         end
         # #137: the items of a list a speaker introduces with "the following …:" ("I present reports on the following
-        # subjects:") are not their speech, unless the row speaks in the first person or is a numbered clause ("(a) …",
-        # part of a motion or bill they read); the list runs while the rows after it are quotes or unnamed non-speech
-        if spoken_row(r, h)
-            in_list = occursin(r"(?i)\bthe\s+following\b[^.]{0,80}:\s*[-—–]?\s*$", content)
+        # subjects:", or a printed "The following papers were presented:") are not their speech, unless the row speaks
+        # in the first person or is a numbered clause ("(a) …", part of a motion or bill they read); the list runs while
+        # the rows after it are quotes or unnamed non-speech
+        if spoken_row(r, h) || (isflag(r, h, :non_speech_flag) && x[3] in ("procedural", "other"))
+            if occursin(r"(?i)\bthe\s+following\b[^.]{0,80}:\s*[-—–]?\s*$", content) &&
+               occursin(r"(?i)\bI\s+(?:now\s+|also\s+|hereby\s+)?(?:present|table|lay\s+(?:up)?on\s+the\s+table)\b|\bfollowing\s+papers\b|\bpapers\s+(?:were|was)\s+presented\b", content)
+                in_list = true
+            elseif spoken_row(r, h) || !(isflag(r, h, :quote_flag) || unnamed_other || x[3] == "other")
+                in_list = false
+            end
         elseif !(isflag(r, h, :quote_flag) || unnamed_other)
             in_list = false
         end
