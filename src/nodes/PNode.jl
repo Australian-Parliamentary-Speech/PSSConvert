@@ -92,7 +92,40 @@ function process_node(node::Node{<:PNode},node_tree)
     end
 
     define_flags(node,parent_node,node_tree)
+    # #148: a passage quoted in small type inside a speech, question or answer is a quote by the speaker
+    if small_type_quote(node.node, parent_node)
+        for flag in ("speech_flag", "question_flag", "answer_flag")
+            node.headers_dict[flag] = 0
+        end
+        node.headers_dict["quote_flag"] = 1
+    end
     return construct_row(node,node_tree)
+end
+
+p_class(e) = (nodename(e) == "p" && haskey(e, "class")) ? e["class"] : ""
+is_small(e) = startswith(p_class(e), "HPS-Small")
+p_text(e) = strip(replace(nodecontent(e), r"\s+" => " "))
+
+"""#148 (decided 14/11/2026: a passage a member quotes is `quote` with their id, in every era). From 2011 the XML
+prints a quoted passage in small type (`<p class="HPS-Small">`). Such a paragraph inside a speech, question or answer
+is a quote when its run of small paragraphs opens with a quotation mark or an ellipsis, or follows a paragraph that
+ends in a colon. Not after "I move:" (motion text, #142) or "… read as follows" (a document, #105)."""
+function small_type_quote(e, parent_node)
+    any(t -> parent_node isa Node{<:t}, (SpeechNode, QuestionNode, AnswerNode)) || return false
+    is_small(e) || return false
+    first_small = e
+    while hasprevelement(first_small) && is_small(prevelement(first_small))
+        first_small = prevelement(first_small)
+    end
+    occursin(r"(?i)\bI\s+(?:now\s+|formally\s+)?move\b", p_text(first_small)) && return false
+    occursin(r"^[\"“‘'…]|^\.\.\.", p_text(first_small)) && return true
+    hasprevelement(first_small) || return false
+    before = prevelement(first_small)
+    nodename(before) == "p" || return false
+    t = p_text(before)
+    occursin(r"(?i)\bI\s+(?:now\s+|formally\s+|therefore\s+)?move\b[^:]{0,40}:\s*$", t) && return false
+    occursin(r"(?i)\bread\s+as\s+follows\b", t) && return false
+    return occursin(r":\s*$", t)
 end
 
 
