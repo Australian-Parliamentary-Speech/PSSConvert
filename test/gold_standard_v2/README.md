@@ -17,6 +17,8 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
   - a question on notice is `written_question` and the minister's reply `written_answer` (Australian-Parliamentary-Speech/PSSConvert#127, decided 12/11/2026 after the human check of the pilot);
   - "Leave not granted." and "having risen in their places" are stage directions (§3).
 
+- **Corrected after review** (Australian-Parliamentary-Speech/PSSConvert#141, 14/11/2026): 84 rows on 10 days that went against the conventions: speaker ids on House 22/01/1902, a spoken tabling statement on House 21/03/1968, type flags and a speech on House 24/02/1987, and a member's own words inside their own speech on 8 days. Each row is listed in `../gold_standard_v2_notes/corrections_141.csv`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
