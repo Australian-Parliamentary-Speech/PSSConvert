@@ -24,6 +24,8 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
 
 - **Speaker ids filled** (Australian-Parliamentary-Speech/PSSConvert#153, approved 15/11/2026): 140 spoken rows had no id, against §1. For 78 that name a member, the id comes from the members list (or the #88 table for an old ParlInfo code). For 62 with no name, an independent Fable reviewer decided each from the XML: 58 a member's or fixed id (motion text restated under "Debate resumed … on motion by X" is the mover's quote, and a question the Chair puts is `10000`), and 4 lists of papers that are non-speech `other`. Each is in `../gold_standard_v2_notes/ids_153.csv`.
 
+- **Petitions** (Australian-Parliamentary-Speech/PSSConvert#157, decided 15/11/2026): a petition row has the id of the member who presented it, from the XML's presenter fields or from the petition's "by …" line (the first member named), and the Clerk's fixed id `10001` where no member is named. The Clerk's own rows are `10001`. House 24/02/1987's single row for the whole lodged list is split into one row per petition. Each change is in `../gold_standard_v2_notes/petitions_157.csv`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
