@@ -73,3 +73,12 @@ the row, so existing columns keep their positions.
 - Department headings ("Prime Minister's Department"), letter salutations ("Dear Sir", "To Mr. Gregory"),
   reported speech ("Mr Bury said:") and web links are no longer taken as the speaker's `name` (about 200,000
   words); the text stays with the speaker or document it belongs to (Australian-Parliamentary-Speech/PSSConvert#139).
+- Conventions decided on 14/11/2026 (Australian-Parliamentary-Speech/PSSConvert#142):
+  - the text moved after "I move:" ("That this bill be now read a second time.", "Schedule 1, page 15, after
+    line 8, insert: …") is a `quote_flag = 1` row with the mover's `name` and `name.id`; "I move:" stays in the
+    speech, and words after the motion in the same paragraph stay speech;
+  - a printed notice of motion ("Senator Siewert to move on the next day of sitting: …") is `non_speech_flag = 1`,
+    `nonspeech_type = other`, with the member's id, and so is the motion text printed under it; a spoken notice
+    ("I give notice that …") stays the member's speech;
+  - the Governor-General's opening speech is `speech_flag = 1` with the new fixed `name.id` `GOVERNOR-GENERAL`, as
+    presiding officers have `10000`; the House's reprint of it is `incorporated` with that id.

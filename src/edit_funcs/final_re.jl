@@ -11,7 +11,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
 
     open(output_fn, "w") do io
         write_row_to_io(io,[string.(headers_)..., "presiding_phid", "nonspeech_type", "turn_no"])
-        turn, last_key, prev_wa, doc, tabler, presenter = 0, nothing, nothing, nothing, nothing, nothing
+        turn, last_key, prev_wa, doc, tabler, presenter, notice, notice_last = 0, nothing, nothing, nothing, nothing, nothing, nothing, ""
         built = Vector{Vector{Any}}()
         for row in rows
             # #139: a heading, salutation or link taken as the speaker's name is no name
@@ -29,10 +29,22 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             nonspeech_type = apply_conventions!(row,header_to_num)
             prev_wa = nonspeech_type == "written_answer" ? written_answer_id!(row,header_to_num,prev_wa) : nothing
             nonspeech_type, doc = incorporated!(row,header_to_num,nonspeech_type,doc,presenter)
+            # #142: a printed notice of motion is the member's, and so is its text on the rows after it
+            nonspeech_type, this_notice = printed_notice!(row,header_to_num,nonspeech_type,house,date,dids)
+            if !isnothing(this_notice)
+                notice = this_notice
+            elseif !isnothing(notice) && nonspeech_type in ("other", "procedural") && isna(row[header_to_num[:name]]) && isna(row[header_to_num[Symbol("name.id")]]) &&
+                   !occursin(NOTICE_STOP, strip(string(row[header_to_num[:content]]))) && !is_procedural(strip(string(row[header_to_num[:content]])))
+                row[header_to_num[:name]], row[header_to_num[Symbol("name.id")]] = notice
+                nonspeech_type = "other"
+            else
+                notice = nothing
+            end
+            notice_last = strip(string(row[header_to_num[:content]]))
             nid = string(row[header_to_num[Symbol("name.id")]])
             spoken_ = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS)
             # a bill link is not a member (#122)
-            if spoken_ && !isna(nid) && !(nid in ("10000","UNKNOWN","MEMBERS","OPPOSITION","GOVERNMENT")) && !occursin(BILL_LINK, nid)
+            if spoken_ && !isna(nid) && !(nid in GENERIC_IDS) && !occursin(BILL_LINK, nid)
                 tabler = nid
             end
             # #134: a document belongs to whoever presented it (§3): the last member to speak, or the Speaker or
@@ -61,13 +73,18 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             end
             content = srow[header_to_num[:content]]
             # #108: stage directions inside a spoken row become rows of their own
-            pieces = any(f -> isflag(srow,header_to_num,f), SPOKEN_FLAGS) ? document_pieces(stage_pieces(content)) : [(content, false)]
+            pieces = any(f -> isflag(srow,header_to_num,f), SPOKEN_FLAGS) ? motion_pieces(document_pieces(stage_pieces(content))) :
+                     isflag(srow,header_to_num,:motionnospeech_flag) ? motion_pieces([(content, false)]) : [(content, false)]
             for (text, stage) in pieces
                 piece, ptype, pres = srow, stype, spres
                 if length(pieces) > 1
                     piece = copy(srow)
                     piece[header_to_num[:content]] = text
-                    if stage === :note
+                    if stage === :motion
+                        # #142: the text moved is a quote by the mover
+                        set_type!(piece, header_to_num, :quote_flag)
+                        ptype, pres = "N/A", "N/A"
+                    elseif stage === :note
                         # #134: the note is a row of its own, and the rows after it are the document (#105)
                         set_type!(piece, header_to_num, :non_speech_flag)
                         piece[header_to_num[:name]] = "N/A"

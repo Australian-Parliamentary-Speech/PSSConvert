@@ -237,7 +237,7 @@ end
 
 const UPON_NOTICE = r"(?i)upon\s+notice"
 const QUESTION_TIME = r"(?i)questions?\s+without\s+notice"
-const GENERIC_IDS = ("10000", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT")
+const GENERIC_IDS = ("10000", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT", "GOVERNOR-GENERAL")
 year_of(date) = something(tryparse(Int, first(string(date), 4)), 0)
 spoken_row(r, h) = any(f -> isflag(r, h, f), SPOKEN_FLAGS)
 real_id(r, h) = (nid = string(r[h[Symbol("name.id")]]); !isna(nid) && !(nid in GENERIC_IDS))
@@ -269,6 +269,8 @@ function day_rules!(rows, h, date)
         end
     end
     speech_owner!(rows, h)
+    # #142: the Governor-General's opening speech
+    governor_general!(rows, h)
     groups = Dict{Tuple{String,String},Vector{Int}}()
     order = Tuple{String,String}[]
     for (i, x) in enumerate(rows)
@@ -338,6 +340,8 @@ function day_rules!(rows, h, date)
         end
         after_doc = occursin(READ_AS_FOLLOWS, strip(content))
     end
+    # #142: the text moved after "I move:" is a quote by the mover
+    rows = motion_after!(rows, h)
     written_questions!(rows, h)
     return merge_turns(rows, h)
 end
