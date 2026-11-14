@@ -22,6 +22,8 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
 
 - **Quotations** (Australian-Parliamentary-Speech/PSSConvert#148, decided 14/11/2026): a passage a member quotes is `quote` with their id. On the four days recoded from v1 that are in the 2011 layout (House 13/02/2013, 24/02/2015, 12/02/2025, Senate 30/07/2019), the passages the XML prints in small type after a colon or opening with a quotation mark are recoded to match. Each is listed in `../gold_standard_v2_notes/quotes_148.csv`.
 
+- **Speaker ids filled** (Australian-Parliamentary-Speech/PSSConvert#153, approved 15/11/2026): 140 spoken rows had no id, against §1. For 78 that name a member, the id comes from the members list (or the #88 table for an old ParlInfo code). For 62 with no name, an independent Fable reviewer decided each from the XML: 58 a member's or fixed id (motion text restated under "Debate resumed … on motion by X" is the mover's quote, and a question the Chair puts is `10000`), and 4 lists of papers that are non-speech `other`. Each is in `../gold_standard_v2_notes/ids_153.csv`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
