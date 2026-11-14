@@ -316,7 +316,7 @@ function day_rules!(rows, h, date)
             set_type!(r, h, :petition_flag)
             x[3] = "N/A"
         elseif unnamed_other && !isnothing(last) && length(split(content)) >= 12 && !is_procedural(strip(content)) &&
-               !occursin(READ_AS_FOLLOWS, strip(content)) && !after_doc && !(in_list && !occursin(r"\b(?:I|we|my|our|me|us)\b", content)) && !occursin(r"^\s*That\b", content) &&
+               !occursin(READ_AS_FOLLOWS, strip(content)) && !after_doc && !(in_list && !occursin(r"\b(?:I|we|my|our|me|us)\b", content) && !occursin(r"^\s*\(\s*(?:\d{1,3}|[a-zA-Z]|[ivxIVX]{1,5})\s*\)", content)) && !occursin(r"^\s*That\b", content) &&
                !occursin(r"(?i)took\s+the\s+chair|suspended|standing\s+order|read\s+prayers", content) &&
                !any(p -> p[2] || occursin(STAGE_SENTENCE, p[1]), stage_pieces(content))
             # a spoken paragraph that lost its speaker: the member who was speaking continues
@@ -324,11 +324,11 @@ function day_rules!(rows, h, date)
             r[h[:name]], r[h[nid]] = last[1], last[2]
             x[3] = "N/A"
         end
-        # #137: the items of a list a speaker introduces ("I present reports on the following subjects:") are not
-        # their speech, unless the row speaks in the first person; the list runs while the rows after it are quotes or
-        # unnamed non-speech
+        # #137: the items of a list a speaker introduces with "the following …:" ("I present reports on the following
+        # subjects:") are not their speech, unless the row speaks in the first person or is a numbered clause ("(a) …",
+        # part of a motion or bill they read); the list runs while the rows after it are quotes or unnamed non-speech
         if spoken_row(r, h)
-            in_list = occursin(r":\s*[-—–]?\s*$", content)
+            in_list = occursin(r"(?i)\bthe\s+following\b[^.]{0,80}:\s*[-—–]?\s*$", content)
         elseif !(isflag(r, h, :quote_flag) || unnamed_other)
             in_list = false
         end
