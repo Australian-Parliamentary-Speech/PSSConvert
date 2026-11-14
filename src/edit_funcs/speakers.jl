@@ -152,3 +152,30 @@ function SPLIT_TYPES(row, h, nonspeech_type)
     (isflag(row, h, :quote_flag) || isflag(row, h, :petition_flag) || string(row[h[:chamber_flag]]) == "3") && return false
     return nonspeech_type in ("other", "procedural", "N/A")
 end
+
+# #88: ParlInfo's old SGML-era speaker codes (mostly 1981-1997), mapped to Parliamentary Handbook ids by the reviewed
+# table data/legacy_ids.csv (each mapping with its basis)
+const LEGACY_IDS = Ref{Union{Nothing,Dict{String,Tuple{String,String}}}}(nothing)
+
+function legacy_ids()
+    if isnothing(LEGACY_IDS[])
+        LEGACY_IDS[] = Dict(r.legacy_id => (r.phid, lowercase(strip(split(r.display_name, ",")[1])))
+                            for r in CSV.File(joinpath(DATA_DIR, "legacy_ids.csv"); types=String))
+    end
+    return LEGACY_IDS[]
+end
+
+"""#88: replaces an old ParlInfo code in name.id with the member's Handbook id. A row whose printed name gives a
+different surname keeps its code, in case the code was reused."""
+function legacy_id!(row, h)
+    nid = Symbol("name.id")
+    m = get(legacy_ids(), strip(string(row[h[nid]])), nothing)
+    isnothing(m) && return row
+    w = name_words(string(row[h[:name]]))
+    if !isempty(w) && isnothing(presiding_office(string(row[h[:name]]))) && lowercase(w[end]) != m[2] &&
+       !endswith(m[2], " " * lowercase(w[end]))
+        return row
+    end
+    row[h[nid]] = m[1]
+    return row
+end
