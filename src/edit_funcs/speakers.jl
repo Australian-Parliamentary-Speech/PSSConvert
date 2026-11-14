@@ -58,7 +58,13 @@ function resolve_id(name, house, date, dids)
     isempty(w) && return nothing
     ids = get(dids, lowercase(w[end]), nothing)
     !isnothing(ids) && length(ids) == 1 && return first(ids)
-    !isnothing(ids) && length(ids) > 1 && return nothing
+    # several ids for the surname that day: a first name in the text may still pick one out
+    # a two-word surname ("Stott Despoja", "Di Natale")
+    if length(w) >= 2
+        two = lowercase(w[end-1] * " " * w[end])
+        cands = unique([p for (p, s, e, n) in get(members(), (house, two), []) if s <= date <= e])
+        length(cands) == 1 && return cands[1]
+    end
     return member_by_surname(house, date, join(w, " "))
 end
 
