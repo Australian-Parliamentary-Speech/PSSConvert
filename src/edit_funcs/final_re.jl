@@ -10,7 +10,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
 
     open(output_fn, "w") do io
         write_row_to_io(io,[string.(headers_)..., "presiding_phid", "nonspeech_type", "turn_no"])
-        turn, last_key, prev_wa, doc, tabler = 0, nothing, nothing, nothing, nothing
+        turn, last_key, prev_wa, doc, tabler, presenter = 0, nothing, nothing, nothing, nothing, nothing
         built = Vector{Vector{Any}}()
         for row in rows
             row = if_speaker_then_speech(row,header_to_num)
@@ -20,20 +20,40 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             presiding = presiding_id!(row,header_to_num,presiding)
             nonspeech_type = apply_conventions!(row,header_to_num)
             prev_wa = nonspeech_type == "written_answer" ? written_answer_id!(row,header_to_num,prev_wa) : nothing
-            nonspeech_type, doc = incorporated!(row,header_to_num,nonspeech_type,doc,tabler)
+            nonspeech_type, doc = incorporated!(row,header_to_num,nonspeech_type,doc,presenter)
             nid = string(row[header_to_num[Symbol("name.id")]])
-            if any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) && !isna(nid) && !(nid in ("10000","UNKNOWN","MEMBERS","OPPOSITION","GOVERNMENT"))
+            spoken_ = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS)
+            # a bill link is not a member (#122)
+            if spoken_ && !isna(nid) && !(nid in ("10000","UNKNOWN","MEMBERS","OPPOSITION","GOVERNMENT")) && !occursin(BILL_LINK, nid)
                 tabler = nid
+            end
+            # #134: a document belongs to whoever presented it (§3): the last member to speak, or the Speaker or
+            # President when they say "I present"; a presiding officer who only grants leave tables nothing
+            if spoken_
+                presenter = nid == "10000" && occursin(PRESENTS, string(row[header_to_num[:content]])) ? "10000" : tabler
             end
             content = row[header_to_num[:content]]
             # #108: stage directions inside a spoken row become rows of their own
-            pieces = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) ? stage_pieces(content) : [(content, false)]
+            pieces = any(f -> isflag(row,header_to_num,f), SPOKEN_FLAGS) ? document_pieces(stage_pieces(content)) : [(content, false)]
             for (text, stage) in pieces
                 piece, ptype, pres = row, nonspeech_type, presiding
                 if length(pieces) > 1
                     piece = copy(row)
                     piece[header_to_num[:content]] = text
-                    if stage
+                    if stage === :note
+                        # #134: the note is a row of its own, and the rows after it are the document (#105)
+                        set_type!(piece, header_to_num, :non_speech_flag)
+                        piece[header_to_num[:name]] = "N/A"
+                        piece[header_to_num[Symbol("name.id")]] = "N/A"
+                        ptype, pres = "procedural", "N/A"
+                        doc = (presenter, 0)
+                    elseif stage === :document
+                        # #134: the document after "The document read as follows" is the tabling member's (§3)
+                        set_type!(piece, header_to_num, :non_speech_flag)
+                        piece[header_to_num[Symbol("name.id")]] = isnothing(presenter) ? "N/A" : presenter
+                        ptype, pres = "incorporated", "N/A"
+                        doc = (presenter, 1)
+                    elseif stage
                         set_type!(piece, header_to_num, :non_speech_flag)
                         piece[header_to_num[:name]] = "N/A"
                         piece[header_to_num[Symbol("name.id")]] = "N/A"

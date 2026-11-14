@@ -163,8 +163,9 @@ end
 
 # #108: a whole sentence that is a stage direction, inside or at the end of a spoken row
 const STAGE_SENTENCE = r"(?i)^(?:debate\s+(?:\(on\s+motion\s+by\s+[^)]{2,60}\)\s*)?(?:adjourned|interrupted|resumed)|question\s+(?:put|agreed\s+to|resolved\s+in\s+the\s+(?:affirmative|negative)|so\s+resolved\s+in\s+the\s+(?:affirmative|negative)|negatived)|(?:bill|motion|amendments?|clauses?[\w\s,]{0,30}|report|resolution)\s+(?:\(by\s+[^)]{2,60}\)\s*,?\s*)?(?:,?\s*by\s+leave,?\s*)?(?:agreed\s+to|negatived|withdrawn|amended\s+accordingly|adopted|reported)|amendment\s+\(by\s+[^)]{2,60}\)\s+proposed|leave\s+(?:not\s+)?granted|petition\s+received|progress\s+reported|ordered\s+that\s+the\s+report\s+be\s+(?:printed|made\s+a\s+parliamentary\s+paper)|report\s+made\s+a\s+parliamentary\s+paper|bill\s+read\s+a\s+(?:first|second|third)\s+time|more\s+than\s+the\s+number\s+of\s+(?:members|senators)\s+required\s+by\s+the\s+standing\s+orders?\s+having\s+risen|(?:the\s+)?(?:house|senate)\s+adjourned\s+at|[{(\[]?\s*sitting\s+suspended)"
-# a sentence ends at . ! ? or a closing bracket before a capital, an opening bracket or "by leave"; or at a dash before a capital
-const SENTENCE_BREAK = r"(?<=[.!?)\]}])\s+(?=[A-Z({\[]|by\s+leave)|(?<=[—–])\s*(?=[A-Z])"
+# a sentence ends at . ! ? or a closing bracket before a capital, an opening bracket or "by leave"; or at a dash before a
+# capital, including a hyphen run onto the full stop when rows are joined ("affirmative.-I move")
+const SENTENCE_BREAK = r"(?<=[.!?)\]}])\s+(?=[A-Z({\[]|by\s+leave)|(?<=[—–])\s*(?=[A-Z])|(?<=[.!?])-(?=[A-Z])"
 
 """#108: splits a spoken row's content into pieces, marking the whole sentences that are stage directions (§1, §3).
 A sentence counts only if the stage-direction phrase covers all but at most 8 of its words. The spoken pieces
@@ -197,6 +198,41 @@ function stage_pieces(content)
         i = j + 1
     end
     return [p for p in pieces if !isempty(p[1])]
+end
+
+# a presiding officer presenting a paper ("I present the Selection Committee's report"), and a bill link used as an id
+const PRESENTS = r"(?i)\bI\s+(?:now\s+)?(?:present|table|lay\s+on\s+the\s+table)\b"
+const BILL_LINK = r"^[rs]\d+$"
+
+# the editor's note that a document follows: in the past tense, or in brackets ("(The document reads as follows)");
+# "The letter reads as follows" without brackets is spoken
+const DOC_NOUN = raw"(?:document|answer|table|statement|speech|speeche|letter|list|schedule|report|eulogy|tribute|attachment|response|paper)s?"
+const DOCUMENT_FOLLOWS = Regex(raw"(?:\(\s*The\s+(?:\w+\s+){0,2}?" * DOC_NOUN * raw"\s+reads?|\bThe\s+(?:\w+\s+){0,2}?" * DOC_NOUN *
+                               raw"\s+read)\s+as\s+follows\s*\)?\s*[-—–:.]*")
+
+"""#134: the note "The document read as follows" inside a spoken piece is split off as a row of its own (`:note`,
+non-speech with no id, as gold codes it), and the words after it, if any, are the document (`:document`, §3). A piece
+that is only the note is left alone: `incorporated!` already treats it as the note (#105)."""
+function document_pieces(pieces)
+    out = Tuple{String,Any}[]
+    for (text, stage) in pieces
+        m = stage ? nothing : match(DOCUMENT_FOLLOWS, text)
+        isnothing(m) && (push!(out, (text, stage)); continue)
+        cut = m.offset + ncodeunits(m.match)
+        before = strip(text[1:prevind(text, m.offset)])
+        note, after = strip(m.match), strip(text[cut:end])
+        if length(split(after)) < 3
+            # a stray bracket or dash after the note belongs to it
+            note, after = strip(note * " " * after), ""
+        end
+        if isempty(before) && isempty(after)
+            push!(out, (text, stage)); continue
+        end
+        isempty(before) || push!(out, (String(before), false))
+        push!(out, (String(note), :note))
+        isempty(after) || push!(out, (String(after), :document))
+    end
+    return out
 end
 
 const UPON_NOTICE = r"(?i)upon\s+notice"
@@ -232,6 +268,7 @@ function day_rules!(rows, h, date)
             set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
         end
     end
+    speech_owner!(rows, h)
     groups = Dict{Tuple{String,String},Vector{Int}}()
     order = Tuple{String,String}[]
     for (i, x) in enumerate(rows)
@@ -295,6 +332,33 @@ function day_rules!(rows, h, date)
     end
     written_questions!(rows, h)
     return merge_turns(rows, h)
+end
+
+# a <speech> element, and what lies within it: "/speech[10]/interjection[44]/talk.start/para" -> ("…/speech[10]", "interjection[44]/…")
+const SPEECH_PART = r"^(.*?/speech(?:\[\d+\])?)/(.*)$"
+
+"""#135: the source often marks a member's own words inside their speech as an `<interjection>` by them, not a
+`<continue>` (committee debates most of all). An interjection row inside a `<speech>` element, by the member who
+opens that speech (its first talk.start or talk.text with a member's own id), is their speech (§1). Rows that say
+"interjecting" are left alone."""
+function speech_owner!(rows, h)
+    haskey(h, :path) || return rows
+    nid = Symbol("name.id")
+    owner = Dict{String,String}()
+    for x in rows
+        r = x[1]
+        m = match(SPEECH_PART, string(r[h[:path]]))
+        isnothing(m) && continue
+        el, rest = m.captures[1], m.captures[2]
+        id = string(r[h[nid]])
+        if !haskey(owner, el) && startswith(rest, "talk.") && spoken_row(r, h)
+            owner[el] = real_id(r, h) ? id : ""
+        elseif isflag(r, h, :interjection_flag) && startswith(rest, "interject") && get(owner, el, "") == id && id != "" &&
+               !occursin(r"(?i)interjecting", string(r[h[:content]]))
+            set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
+        end
+    end
+    return rows
 end
 
 # "asked the Minister ..., upon notice", near the start (after "(Question No. 1109)" or a stray name fragment)
