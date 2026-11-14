@@ -378,17 +378,29 @@ function speech_owner!(rows, h)
     haskey(h, :path) || return rows
     nid = Symbol("name.id")
     owner = Dict{String,String}()
+    owner_name = Dict{String,String}()
     for x in rows
         r = x[1]
         m = match(SPEECH_PART, string(r[h[:path]]))
         isnothing(m) && continue
         el, rest = m.captures[1], m.captures[2]
         id = string(r[h[nid]])
+        content = strip(string(r[h[:content]]))
         if !haskey(owner, el) && startswith(rest, "talk.") && spoken_row(r, h)
             owner[el] = real_id(r, h) ? id : ""
+            owner_name[el] = string(r[h[:name]])
         elseif isflag(r, h, :interjection_flag) && startswith(rest, "interject") && get(owner, el, "") == id && id != "" &&
-               !occursin(r"(?i)interjecting", string(r[h[:content]]))
+               !occursin(r"(?i)interjecting", content)
             set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
+        elseif occursin(r"^para(?:\[\d+\])?$", rest) && get(owner, el, "") != "" && isna(r[h[:name]]) &&
+               (isna(id) || id == "UNKNOWN") && length(split(content)) >= 4 &&
+               (spoken_row(r, h) || (isflag(r, h, :non_speech_flag) && x[3] == "other")) &&
+               !is_procedural(content) && !occursin(STAGE_SENTENCE, content) && !occursin(READ_AS_FOLLOWS, content)
+            # #107: a paragraph straight under the <speech> element, after an interjection, with no speaker of its
+            # own: the speech goes on, and it is the words of the member who opened it
+            set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
+            r[h[:name]], r[h[nid]] = owner_name[el], owner[el]
+            x[3] = "N/A"
         end
     end
     return rows
