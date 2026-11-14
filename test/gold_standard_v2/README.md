@@ -20,6 +20,8 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
 - **Corrected after review** (Australian-Parliamentary-Speech/PSSConvert#141, 14/11/2026): 84 rows on 10 days that went against the conventions: speaker ids on House 22/01/1902, a spoken tabling statement on House 21/03/1968, type flags and a speech on House 24/02/1987, and a member's own words inside their own speech on 8 days. Each row is listed in `../gold_standard_v2_notes/corrections_141.csv`.
 - **Conventions decided on 14/11/2026** (Australian-Parliamentary-Speech/PSSConvert#142), applied to every day: motion text after "I move:" is `quote` with the mover's id; a printed notice of motion is non-speech `other` with the member's id; the Governor-General's opening speech has the id `GOVERNOR-GENERAL`. Each recoded row is listed in `../gold_standard_v2_notes/conventions_142.csv`.
 
+- **Quotations** (Australian-Parliamentary-Speech/PSSConvert#148, decided 14/11/2026): a passage a member quotes is `quote` with their id. On the four days recoded from v1 that are in the 2011 layout (House 13/02/2013, 24/02/2015, 12/02/2025, Senate 30/07/2019), the passages the XML prints in small type after a colon or opening with a quotation mark are recoded to match. Each is listed in `../gold_standard_v2_notes/quotes_148.csv`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
