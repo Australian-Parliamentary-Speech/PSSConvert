@@ -43,3 +43,9 @@ the row, so existing columns keep their positions.
 - A turn whose first paragraph follows a `<talk.start>` that holds only the talker now gets that talker's
   name and id; before, the whole turn could have none (369 turns in 59 files, Senate 20/09/1907 most of
   all) (Australian-Parliamentary-Speech/PSSConvert#130).
+- A printed question on notice inside a `<question>` element ("Mr X asked the Minister, upon notice, …"),
+  and the printed reply that follows it, are now `written_question` and `written_answer` (non-speech,
+  `chamber_flag = 3`) in every era; before, they were `question` and `answer`. Quoted text inside an
+  earlier-era written question or answer is now non-speech too. Across the corpus this moves 2.6 million
+  words from spoken types to written ones on 4,240 days; no words are added or lost
+  (Australian-Parliamentary-Speech/PSSConvert#132).
