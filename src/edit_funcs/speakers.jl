@@ -101,6 +101,13 @@ const SPEAKER_HEAD = Regex("(?:^|(?<=[.!?:\"'”’)\\]])\\s+)(" * HEAD_TITLE * 
 # the SGML form "Mr REITH (Flinders) (3.04) Last night's ..." has no dash after the time
 const SPEAKER_HEAD_SGML = Regex("(?:^|(?<=[.!?\"'”’)\\]])\\s+)(" * HEAD_TITLE * "\\s*" * HEAD_NAME * ")" *
                                 raw"\s*\([^)]{2,40}\)\s*\(\d{1,2}[.:]\d{2}\)\s+(?=[A-Z])")
+# #107: with an electorate in brackets the heading is clear enough to allow the OCR's noise around it: a comma in
+# the name ("Mr. WINTER, COOKE (Wannon)"), a garbled time ("[45l", "M.81."), and the words run on with or without a
+# space ("(Wannon).Being", "(Western Australia). When", "[45lThe")
+const HEAD_NAME_LOOSE = raw"(?:[A-Z]\.\s*){0,3}(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]{2,}(?:,?\s+(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]+){0,3}"
+const SPEAKER_HEAD_BRACKET = Regex("(?:^|(?<=[.!?:\"'”’)\\]])\\s+)(" * HEAD_TITLE * "\\s*" * HEAD_NAME_LOOSE * ")" *
+                                   raw"\s*,?\s*\([A-Z][^)]{1,40}\)(?:\s*[\[(]?[\dA-Za-z.:,]{1,8}?[\])]?)?" *
+                                   raw"(?:\.?\s*[-—–]+\s*|\.\s*(?=[A-Z\"“])|(?=[A-Z][a-z]))")
 const NOT_HEAD_NAME = r"^(?:SPEAKER|PRESIDENT|CHAIRMAN|CHAIR|DEPUTY|ACTING|TEMPORARY|CLERK)\b"
 
 """#137: splits `content` where a member is named by a printed heading. Returns a vector of (text, id, name);
@@ -109,9 +116,9 @@ and it is taken out of the text. One piece with id nothing means no split."""
 function speaker_segments(content, house, date, dids)
     text = string(content)
     heads = Tuple{Int,Int,String,String}[]   # (start, stop, id, name)
-    for re in (SPEAKER_HEAD, SPEAKER_HEAD_SGML), m in eachmatch(re, text)
-        # #147: a garbled "Mr." is read as "Mr"
-        name = strip(replace(strip(m.captures[1]), GARBLED_MR => "Mr "))
+    for re in (SPEAKER_HEAD, SPEAKER_HEAD_SGML, SPEAKER_HEAD_BRACKET), m in eachmatch(re, text)
+        # #147: a garbled "Mr." is read as "Mr"; #107: a comma inside a printed heading is OCR noise, not "Surname, Given"
+        name = strip(replace(replace(strip(m.captures[1]), GARBLED_MR => "Mr "), "," => " "))
         nm = replace(name, Regex("^" * HEAD_TITLE * "\\s*") => "")
         occursin(NOT_HEAD_NAME, nm) && continue
         id = resolve_id(name, house, date, dids)
@@ -120,12 +127,17 @@ function speaker_segments(content, house, date, dids)
         push!(heads, (start, m.offset + ncodeunits(m.match), id, String(name)))
     end
     isempty(heads) && return [(text, nothing, nothing)]
-    sort!(heads)
+    # the same heading can be matched by more than one pattern: keep one head per place, the longest
+    sort!(heads, by = x -> (x[1], -x[2]))
+    kept = Tuple{Int,Int,String,String}[]
+    for hd in heads
+        (isempty(kept) || hd[1] >= kept[end][2]) && push!(kept, hd)
+    end
+    heads = kept
     out = Tuple{String,Any,Any}[]
     before = strip(text[1:prevind(text, heads[1][1])])
     isempty(before) || push!(out, (String(before), nothing, nothing))
     for (i, (s, e, id, name)) in enumerate(heads)
-        i > 1 && s < heads[i-1][2] && continue
         stop = i < length(heads) ? prevind(text, heads[i+1][1]) : lastindex(text)
         piece = e <= stop ? strip(text[e:stop]) : ""
         isempty(piece) || push!(out, (String(piece), id, name))
@@ -139,4 +151,31 @@ function SPLIT_TYPES(row, h, nonspeech_type)
     any(f -> isflag(row, h, f), SPOKEN_FLAGS) && return true
     (isflag(row, h, :quote_flag) || isflag(row, h, :petition_flag) || string(row[h[:chamber_flag]]) == "3") && return false
     return nonspeech_type in ("other", "procedural", "N/A")
+end
+
+# #88: ParlInfo's old SGML-era speaker codes (mostly 1981-1997), mapped to Parliamentary Handbook ids by the reviewed
+# table data/legacy_ids.csv (each mapping with its basis)
+const LEGACY_IDS = Ref{Union{Nothing,Dict{String,Tuple{String,String}}}}(nothing)
+
+function legacy_ids()
+    if isnothing(LEGACY_IDS[])
+        LEGACY_IDS[] = Dict(r.legacy_id => (r.phid, lowercase(strip(split(r.display_name, ",")[1])))
+                            for r in CSV.File(joinpath(DATA_DIR, "legacy_ids.csv"); types=String))
+    end
+    return LEGACY_IDS[]
+end
+
+"""#88: replaces an old ParlInfo code in name.id with the member's Handbook id. A row whose printed name gives a
+different surname keeps its code, in case the code was reused."""
+function legacy_id!(row, h)
+    nid = Symbol("name.id")
+    m = get(legacy_ids(), strip(string(row[h[nid]])), nothing)
+    isnothing(m) && return row
+    w = name_words(string(row[h[:name]]))
+    if !isempty(w) && isnothing(presiding_office(string(row[h[:name]]))) && lowercase(w[end]) != m[2] &&
+       !endswith(m[2], " " * lowercase(w[end]))
+        return row
+    end
+    row[h[nid]] = m[1]
+    return row
 end

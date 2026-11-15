@@ -6,6 +6,8 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
     rows = [Vector{Any}((@. collect(row))[1]) for row in eachrow(csvfile)]
     house = CURRENT_HOUSE[]
     date = something(match(r"\d{4}-\d{2}-\d{2}", basename(input_fn)), (match="N/A",)).match
+    # #88: old ParlInfo codes become Handbook ids before anything reads the ids
+    foreach(r -> legacy_id!(r, header_to_num), rows)
     heads = day_heads(rows, header_to_num, house, date)
     dids = day_ids(rows, header_to_num)
 

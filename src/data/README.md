@@ -8,3 +8,4 @@
   (Chair of Committees). Used by `presiding_phid` (#90).
 - `members_by_surname.csv`: each member's and senator's service periods by chamber and surname, from
   ausPH 1.0.1 (`getIndividuals()`, `getParlService()`), for turning a surname on a date into a Handbook id.
+- `legacy_ids.csv`: ParlInfo's old SGML-era speaker codes (mostly 1981-1997) and the Parliamentary Handbook id each stands for, with the basis of each match, the names it is used with and the dates (Australian-Parliamentary-Speech/PSSConvert#88). Built from the full run by matching each code's surname to the one member serving in that chamber on the dates it is used; the five looser matches were checked by hand. Codes for visiting heads of state and other non-members are left out.

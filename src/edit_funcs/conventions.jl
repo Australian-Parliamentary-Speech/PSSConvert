@@ -346,12 +346,25 @@ function day_rules!(rows, h, date)
             set_type!(r, h, last[3]; clear=SPOKEN_FLAGS)
             r[h[:name]], r[h[nid]] = last[1], last[2]
             x[3] = "N/A"
+        elseif in_list && isflag(r, h, :quote_flag) && !occursin(r"\b(?:I|we|my|our|me|us)\b", content) &&
+               !occursin(r"^\s*\(\s*(?:\d{1,3}|[a-zA-Z]|[ivxIVX]{1,5})\s*\)", content) && !occursin(r"^\s*That\b", content)
+            # #153 (decided 14/11/2026): the items of a list of papers or reports printed under "the following …:"
+            # are not spoken: non-speech, no id
+            set_type!(r, h, :non_speech_flag)
+            r[h[:name]], r[h[nid]] = "N/A", "N/A"
+            x[3] = "other"
         end
         # #137: the items of a list a speaker introduces with "the following …:" ("I present reports on the following
-        # subjects:") are not their speech, unless the row speaks in the first person or is a numbered clause ("(a) …",
-        # part of a motion or bill they read); the list runs while the rows after it are quotes or unnamed non-speech
-        if spoken_row(r, h)
-            in_list = occursin(r"(?i)\bthe\s+following\b[^.]{0,80}:\s*[-—–]?\s*$", content)
+        # subjects:", or a printed "The following papers were presented:") are not their speech, unless the row speaks
+        # in the first person or is a numbered clause ("(a) …", part of a motion or bill they read); the list runs while
+        # the rows after it are quotes or unnamed non-speech
+        if spoken_row(r, h) || (isflag(r, h, :non_speech_flag) && x[3] in ("procedural", "other"))
+            if occursin(r"(?i)\bthe\s+following\b[^.]{0,80}:\s*[-—–]?\s*$", content) &&
+               occursin(r"(?i)\bI\s+(?:now\s+|also\s+|hereby\s+)?(?:present|table|lay\s+(?:up)?on\s+the\s+table)\b|\bfollowing\s+papers\b|\bpapers\s+(?:were|was)\s+presented\b", content)
+                in_list = true
+            elseif spoken_row(r, h) || !(isflag(r, h, :quote_flag) || unnamed_other || x[3] == "other")
+                in_list = false
+            end
         elseif !(isflag(r, h, :quote_flag) || unnamed_other)
             in_list = false
         end
@@ -378,17 +391,29 @@ function speech_owner!(rows, h)
     haskey(h, :path) || return rows
     nid = Symbol("name.id")
     owner = Dict{String,String}()
+    owner_name = Dict{String,String}()
     for x in rows
         r = x[1]
         m = match(SPEECH_PART, string(r[h[:path]]))
         isnothing(m) && continue
         el, rest = m.captures[1], m.captures[2]
         id = string(r[h[nid]])
+        content = strip(string(r[h[:content]]))
         if !haskey(owner, el) && startswith(rest, "talk.") && spoken_row(r, h)
             owner[el] = real_id(r, h) ? id : ""
+            owner_name[el] = string(r[h[:name]])
         elseif isflag(r, h, :interjection_flag) && startswith(rest, "interject") && get(owner, el, "") == id && id != "" &&
-               !occursin(r"(?i)interjecting", string(r[h[:content]]))
+               !occursin(r"(?i)interjecting", content)
             set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
+        elseif occursin(r"^para(?:\[\d+\])?$", rest) && get(owner, el, "") != "" && isna(r[h[:name]]) &&
+               (isna(id) || id == "UNKNOWN") && length(split(content)) >= 4 &&
+               (spoken_row(r, h) || (isflag(r, h, :non_speech_flag) && x[3] == "other")) &&
+               !is_procedural(content) && !occursin(STAGE_SENTENCE, content) && !occursin(READ_AS_FOLLOWS, content)
+            # #107: a paragraph straight under the <speech> element, after an interjection, with no speaker of its
+            # own: the speech goes on, and it is the words of the member who opened it
+            set_type!(r, h, :speech_flag; clear=SPOKEN_FLAGS)
+            r[h[:name]], r[h[nid]] = owner_name[el], owner[el]
+            x[3] = "N/A"
         end
     end
     return rows
