@@ -38,6 +38,11 @@ function define_flags(node::Node{<:AbstractNode{PhaseSGML}}, parent_node, node_t
                 type = findfirst_in_subsoup(parent_debate_node.node.path, "/@type", node.soup)
                 if !isnothing(type)
                     if type.content != "Bill"
+                        # #154: a row has one type (conventions §1); the passage in small type is a quote, not also the
+                        # speech, question, answer or interjection around it
+                        for flag in ("speech_flag", "question_flag", "answer_flag", "interjection_flag")
+                            node.headers_dict[flag] = 0
+                        end
                         node.headers_dict["quote_flag"] = 1
                     end
                 end
