@@ -201,8 +201,9 @@ function chair_question!(rows, h)
     return rows
 end
 
-# a printed notice: "Senator Siewert to move on the next day of sitting:", "Mr Hurford to move That …"
-const NOTICE_PRINTED = r"^((?:Senator|Mr|Mrs|Ms|Miss|Dr)\.?\s+(?:the\s+Hon\.?\s+)?[A-Z][A-Za-z'’\-]+(?:\s+[A-Z][A-Za-z'’\-]+){0,2}?)\s+to\s+move\b"
+# a printed notice: "Senator Siewert to move on the next day of sitting:", "Mr Hurford to move That …", and a notice of
+# a bill (decided 15/11/2026): "Mr Kerin to present at the next sitting a Bill for an Act …"
+const NOTICE_PRINTED = r"^((?:Senator|Mr|Mrs|Ms|Miss|Dr)\.?\s+(?:the\s+Hon\.?\s+)?[A-Z][A-Za-z'’\-]+(?:\s+[A-Z][A-Za-z'’\-]+){0,2}?)\s+to\s+(?:move|present)\b"
 
 """#142: the member whose printed notice of motion this row is, as (name, id), or nothing. A spoken row that is a
 printed notice is made non-speech `other`; the id comes from the same day or the members list (#136)."""
