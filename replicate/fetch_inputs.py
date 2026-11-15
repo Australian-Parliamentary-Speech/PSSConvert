@@ -43,6 +43,13 @@ class Joined:
             self.f.close(); self.f = None
 
 
+def keep(member, path):
+    """tarfile filter: macOS's tar adds "._name" metadata files (AppleDouble) beside each file; they are not inputs"""
+    if os.path.basename(member.name).startswith("._"):
+        return None
+    return tarfile.data_filter(member, path)
+
+
 def unpack(parts, dest):
     """Unpacks the joined parts into dest; returns the sha256 of the joined archive."""
     src = Joined(parts)
@@ -54,7 +61,7 @@ def unpack(parts, dest):
             z.stdin.close()
         th = threading.Thread(target=feed); th.start()
         with tarfile.open(fileobj=z.stdout, mode="r|") as t:
-            t.extractall(dest, filter="data")
+            t.extractall(dest, filter=keep)
         th.join()
         if z.wait() != 0:
             sys.exit("zstd failed")
@@ -64,7 +71,7 @@ def unpack(parts, dest):
     except ImportError:
         sys.exit("Install zstd (macOS: brew install zstd; Windows: winget install zstd; Linux: apt install zstd) and run again.")
     with zstd.ZstdFile(src) as z, tarfile.open(fileobj=z, mode="r|") as t:
-        t.extractall(dest, filter="data")
+        t.extractall(dest, filter=keep)
     return src.sha.hexdigest()
 
 
