@@ -51,6 +51,10 @@ function nonspeech_kind(row, h)
             return "heading"
         end
     end
+    # #100: a table is one row of its own
+    if occursin(r"/table(?:\[\d+\])?$", string(get(row, get(h, :path, 0), "")))
+        return "table"
+    end
     # answers to questions on notice: only the first paragraph carries the member's id
     if string(row[h[:chamber_flag]]) == "3"
         return "written_answer"
@@ -403,6 +407,7 @@ function day_rules!(rows, h, date)
     # #157: petitions the Clerk lodges, and the Clerk's own words, have 10001
     clerk_petitions!(rows, h, date)
     written_questions!(rows, h)
+    written_ids!(rows, h)
     return merge_turns(rows, h)
 end
 
@@ -555,6 +560,7 @@ function written_questions!(rows, h)
     nid = Symbol("name.id")
     asker, open_q, prev = nothing, false, ""
     for x in rows
+        x[3] == "table" && continue  # #100: a table inside a question or answer does not end it
         if x[3] != "written_answer"
             asker, open_q, prev = nothing, false, ""
             continue
@@ -577,6 +583,29 @@ function written_questions!(rows, h)
         end
         q && (x[3] = "written_question")
         open_q, prev = q, content
+    end
+    return rows
+end
+
+"""#106: a paragraph of a written question or answer with no id is the same member's as the paragraph before it of
+the same kind, in the same debate (§4): only a question's or answer's first paragraph names them. A table (#100)
+takes the id of the paragraph before it, and does not break the run."""
+function written_ids!(rows, h)
+    nid = Symbol("name.id")
+    topic(r) = (string(r[h[:debateinfo]]), string(r[h[:subdebateinfo]]))
+    last = nothing  # (kind, topic, name, id)
+    for x in rows
+        r, kind = x[1], x[3]
+        if !(kind in ("written_answer", "written_question", "table"))
+            last = nothing
+            continue
+        end
+        if isna(r[h[nid]]) && !isnothing(last) && last[2] == topic(r) && (kind == "table" || kind == last[1])
+            r[h[:name]], r[h[nid]] = last[3], last[4]
+        end
+        if !isna(r[h[nid]]) && kind != "table"
+            last = (kind, topic(r), r[h[:name]], string(r[h[nid]]))
+        end
     end
     return rows
 end

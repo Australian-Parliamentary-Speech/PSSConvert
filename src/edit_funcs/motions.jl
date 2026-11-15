@@ -61,6 +61,12 @@ function motion_after!(rows, h)
     for x in rows
         r = x[1]
         content = strip(string(r[h[:content]]))
+        # #100: a table in the text moved is the mover's, and the motion goes on after it
+        if !isnothing(mover) && x[3] == "table"
+            r[h[:name]], r[h[nid]] = mover[1], mover[2]
+            push!(out, x)
+            continue
+        end
         if !isnothing(mover)
             unnamed = isna(r[h[:name]]) && isna(r[h[nid]])
             same = !isna(mover[2]) ? string(r[h[nid]]) == mover[2] : string(r[h[:name]]) == mover[1]

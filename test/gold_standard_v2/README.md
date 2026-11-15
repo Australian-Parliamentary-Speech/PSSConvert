@@ -30,6 +30,8 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
 
 - **Restated motions** (Australian-Parliamentary-Speech/PSSConvert#169, decided by Pat 15/11/2026): when a debate resumes, the motion Hansard restates after "Debate resumed … on motion by X:" (and any restated amendment or address) is non-speech `procedural` with no id, as most of the gold already had it. 11 rows coded as the mover's `quote` are recoded. The question the Chair puts after "I propose the question:" is `quote` with `10000`, as most of the gold had it; three rows coded as speech or non-speech are recoded (approved by Pat 15/11/2026). Each is in `../gold_standard_v2_notes/resumed_169.csv`.
 
+- **Tables** (Australian-Parliamentary-Speech/PSSConvert#100, decided by Pat 15/11/2026): each table is one non-speech row, `nonspeech_type = table`, with the id of the answer or speech it is part of; its text is written as in `docs/tables.md`. v2 was coded when tables were not output, so the answers ran straight across them. 41 table rows are inserted where the XML prints them (on Senate 07/11/2006, Senate and House 16/02/1999, House 10/03/1998 and House 12/02/2025), splitting the row around them; where the gold had the table's words inline, they become the table row. One table on House 16/02/1999 could not be placed and is left as it was. Each is in `../gold_standard_v2_notes/tables_100.csv`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
