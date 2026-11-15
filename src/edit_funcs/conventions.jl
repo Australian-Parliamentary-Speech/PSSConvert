@@ -64,8 +64,12 @@ function nonspeech_kind(row, h)
     return "other"
 end
 
+# #155: "took the chair at 2.30 p.m., and read prayers." (the presiding officer's name often in the speaker columns),
+# or with the title and name left in the text: "Mr. Speaker (Hon. W. Elliot Johnson) took the chair …"
+const TOOK_CHAIR = r"(?i)^(?:(?:mr\.?|madam|the)\s+(?:acting\s+|deputy\s+)*(?:speaker|president|chairman|chair)\s*(?:\([^)]*\))?\s*)?took\s+the\s+chair\b"
+
 # anchored at the start, so a long row is still procedural when it carries the motion or clause text it reports
-is_procedural(content) = occursin(PROCEDURAL_LINE, content) || occursin(PROCEDURAL_EXTRA, content) ||
+is_procedural(content) = occursin(PROCEDURAL_LINE, content) || occursin(PROCEDURAL_EXTRA, content) || occursin(TOOK_CHAIR, content) ||
                          (occursin(PROCEDURAL_QUALIFIED, content) && length(split(content)) <= 60)
 
 # #146: the same record with a qualifier before the verb: "Amendment, by leave, withdrawn.", "Question, as amended,
@@ -93,6 +97,13 @@ function apply_conventions!(row, h)
     # #96: tabled or incorporated documents were not spoken
     if spoken && occursin(INCORPORATED, content)
         set_type!(row, h, :non_speech_flag)
+        spoken = false
+    end
+
+    # #155: a "took the chair" line is a stage direction whoever the source names, with no id
+    if spoken && occursin(TOOK_CHAIR, content) && length(split(content)) < 40
+        set_type!(row, h, :non_speech_flag)
+        row[h[Symbol("name.id")]] = "N/A"
         spoken = false
     end
 
