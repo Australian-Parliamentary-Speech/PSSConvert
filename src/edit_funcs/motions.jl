@@ -97,6 +97,104 @@ function motion_after!(rows, h)
     return out
 end
 
+# #169 (decided 15/11/2026): the motion Hansard restates when a debate resumes ("Debate resumed from 7 June, on motion by
+# Mr Truss:" then "That the bill be now read a second time."), with any restated amendment or address, is non-speech
+# `procedural` with no id: it is not the mover's words on that day
+const RESUMED = r"(?i)(?:debate|consideration)\s+(?:on\s+[^.]{0,80}?)?resumed\b[^.]{0,200}?\bmotions?\b[^.]{0,160}[:—–\-]\s*$|\bon\s+motions?\s+by\b[^.]{0,160}[:—–\-]\s*$|\bresumed\s+(?:of|on)\s+the\s+motion\s*[:—–\-]?\s*$"
+const AMENDMENT_RESTATED = r"(?i)^\s*(?:upon|on)\s+which\b[^.]{0,120}\bmoved\b[^.]{0,80}\bamendments?\b[^.]{0,80}[:—–\-]\s*$"
+
+function restated!(q, h, x)
+    set_type!(q, h, :non_speech_flag)
+    for c in (:name, Symbol("name.id"), :electorate, :party, :role)
+        haskey(h, c) && (q[h[c]] = "N/A")
+    end
+    x[3] = "procedural"
+end
+
+"""#169: after a "Debate resumed … on motion by X:" row, the restated motion and the rows that go on restating it
+(the address, "Upon which Y had moved by way of amendment:", the amendment) are non-speech `procedural` with no id,
+up to the first row spoken by a named member. Where the first speaker's words were joined onto the restated motion
+(the 1998–2010 layout puts it in a `<motion>` element, and flatten joins it to the speech after it), the row is split
+at the end of the motion. `rows` holds [row, presiding, nonspeech_type]; returns the new vector."""
+function restated_motions!(rows, h)
+    out = Vector{Vector{Any}}()
+    on, n, after_line = false, 0, false
+    for x in rows
+        r = x[1]
+        content = strip(string(r[h[:content]]))
+        if on
+            n += 1
+            named = !isna(r[h[:name]])
+            if n > 12 || (n == 1 && !occursin(r"^[\"'‘“]?That\b", content)) || isflag(r, h, :petition_flag)
+                on = false
+            elseif spoken_row(r, h) && named
+                if after_line && occursin(r"^[\"'‘“]?That\b", content)
+                    e = motion_end(content)
+                    moved, rest = strip(content[1:e]), strip(content[nextind(content, e):end])
+                    q = copy(r)
+                    q[h[:content]] = moved
+                    restated!(q, h, Any[q, x[2], x[3]])
+                    push!(out, Any[q, "N/A", "procedural"])
+                    if isempty(rest)
+                        on = false
+                        continue
+                    end
+                    r[h[:content]] = rest
+                end
+                on = false
+            elseif isflag(r, h, :non_speech_flag)
+                # a procedural line inside the block ("Upon which … amendment:") goes on; anything else ends it
+                if occursin(AMENDMENT_RESTATED, content) || occursin(RESUMED, content)
+                    x[3] in ("other", "procedural") && (x[3] = "procedural")
+                    after_line = true
+                    push!(out, x)
+                    continue
+                end
+                if x[3] in ("other", "procedural") && !named && !occursin(PROCEDURAL_LINE, content)
+                    # the restated text printed as an unnamed non-speech row
+                    restated!(r, h, x)
+                else
+                    on = false
+                end
+            else
+                # a quote, a motion with no speech, or an unnamed spoken row: the restated text goes on
+                restated!(r, h, x)
+                after_line = false
+                push!(out, x)
+                continue
+            end
+            after_line = false
+        end
+        push!(out, x)
+        if !on && !spoken_row(r, h) && occursin(RESUMED, content)
+            on, n, after_line = true, 0, true
+        end
+    end
+    return out
+end
+
+# #169: the question the Chair puts ("Order! It being 10.30 p.m., I propose the question:" then "That the House do now
+# adjourn.") is a quote by the Chair, `10000`, as #153 decided for the Chair's questions
+const CHAIR_PUTS = r"(?i)\b(?:I\s+propose\s+the\s+question|the\s+question\s+is)\s*[:—–\-]\s*$"
+
+function chair_question!(rows, h)
+    nid = Symbol("name.id")
+    for i in 2:length(rows)
+        p, r = rows[i-1][1], rows[i][1]
+        occursin(CHAIR_PUTS, strip(string(p[h[:content]]))) || continue
+        chair = string(p[h[nid]]) == "10000" || (isflag(p, h, :non_speech_flag) && isna(p[h[:name]]))
+        chair || continue
+        content = strip(string(r[h[:content]]))
+        occursin(r"^That\b", content) && length(content) < 400 || continue
+        (spoken_row(r, h) && !isna(r[h[:name]]) && string(r[h[nid]]) != "10000") && continue
+        set_type!(r, h, :quote_flag)
+        r[h[nid]] = "10000"
+        r[h[:name]] = string(p[h[nid]]) == "10000" ? p[h[:name]] : r[h[:name]]
+        rows[i][3] = "N/A"
+    end
+    return rows
+end
+
 # a printed notice: "Senator Siewert to move on the next day of sitting:", "Mr Hurford to move That …"
 const NOTICE_PRINTED = r"^((?:Senator|Mr|Mrs|Ms|Miss|Dr)\.?\s+(?:the\s+Hon\.?\s+)?[A-Z][A-Za-z'’\-]+(?:\s+[A-Z][A-Za-z'’\-]+){0,2}?)\s+to\s+move\b"
 
