@@ -6,14 +6,24 @@ function flatten(input_fn, output_fn,::Type{<:AbstractEditPhase})
     row_index = 1
     is_written = Dict(number => false for number in 1:length(rows))
     content_pos = header_to_num[:content]
+    # #149: the speaker of the last row written, for a paragraph split off after a lead-in
+    ident = [c for c in (:name, Symbol("name.id"), :electorate, :party, :role) if haskey(header_to_num, c)]
+    talker = nothing
 
     open(output_fn, "w") do io
         write_row_to_io(io,string.(headers_))
         for row in rows
             if !is_written[row_index]
                 if !is_stage_direction(row,header_to_num) && row_index < length(rows)
+                    split_off = split_at_lead_in(row_index, rows, header_to_num)
                     row_ = @. collect(row)
                     row = row_[1]
+                    if split_off && !isnothing(talker) && string(row[header_to_num[:name]]) == "N/A"
+                        for (c, v) in zip(ident, talker)
+                            row[header_to_num[c]] = v
+                        end
+                    end
+                    string(row[header_to_num[:name]]) != "N/A" && (talker = [row[header_to_num[c]] for c in ident])
                     row_content = row[content_pos]
                     children_content,is_written = find_all_child_speeches(row_index,rows,header_to_num,is_written)
                     if row_content != "N/A"
@@ -71,9 +81,30 @@ function equiv(current_row,next_row,header_to_num)
     return current_flags == next_flags && current_debate == next_debate && current_subdebate == next_subdebate
 end
 
+"#149: the row starts only because the paragraph before it, or the one before that, ends in a lead-in"
+function split_at_lead_in(row_no, rows, header_to_num)
+    row_no < 2 && return false
+    content_pos = header_to_num[:content]
+    prev = get_row(rows, row_no - 1)
+    this = get_row(rows, row_no)
+    # unnamed, or already given the speaker's name by the first flatten pass
+    name = string(this[header_to_num[:name]])
+    (name == "N/A" || name == string(prev[header_to_num[:name]])) || return false
+    equiv(prev, this, header_to_num) || return false
+    # only a spoken paragraph: notices, lists and other non-speech rows are left as they were
+    any(f -> haskey(header_to_num, f) && string(this[header_to_num[f]]) == "1", (:speech_flag, :question_flag, :answer_flag)) || return false
+    return lead_in(strip(string(prev[content_pos]))) ||
+           (row_no > 2 && lead_in(strip(string(get_row(rows, row_no - 2)[content_pos]))))
+end
+
 function stop_before_next_talker(row_no,rows,header_to_num)
     current_row = get_row(rows,row_no - 1)
+    content_pos = header_to_num[:content]
     if is_stage_direction(rows[row_no],header_to_num)
+        return true
+    # #149: a paragraph ending in a lead-in ("The article stated:") and the paragraph read out after it stay rows of
+    # their own, so the passage can be made a quote; merge_turns joins them again where it is not
+    elseif split_at_lead_in(row_no, rows, header_to_num)
         return true
     else
         next_row = get_row(rows,row_no)
