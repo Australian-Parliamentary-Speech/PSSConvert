@@ -382,12 +382,57 @@ function day_rules!(rows, h, date)
         end
         after_doc = occursin(READ_AS_FOLLOWS, strip(content))
     end
+    # #149: before 2011, a passage a speaker reads out after a lead-in ending in a colon is a quote by them
+    yr < 2011 && quoted_passages!(rows, h)
     # #142: the text moved after "I move:" is a quote by the mover
     rows = motion_after!(rows, h)
     # #157: petitions the Clerk lodges, and the Clerk's own words, have 10001
     clerk_petitions!(rows, h, date)
     written_questions!(rows, h)
     return merge_turns(rows, h)
+end
+
+# #149: a spoken row that introduces a passage it reads out: a quoting word shortly before a closing colon ("The article
+# stated:", "They read:", "That amendment includes the words:", "He went on to say:"). "As follows:" and "the
+# following:" are not enough, since speakers use them for their own lists and notices ("I shall move that the following
+# bill be introduced:"). Not "I move:" (#142), not a list of papers (#153), not the chair's "I propose the question:".
+const LEAD_IN = r"(?i)\b(?:stated|states|said|says|saying|reads?|wrote|writes|written|reported|reports|declared|declares|concluded|concludes|continued|continues|went\s+on\s+to\s+say|goes\s+on\s+to\s+say|added|adds|quote|quoted|quoting|the\s+words|these\s+words|in\s+these\s+terms|statement\s+that)\b[^.:;!?]{0,50}:\s*[-—–]?\s*$"
+const NOT_LEAD_IN = r"(?i)\bpropose\s+the\s+question\s*:|\bnamely\s*:\s*[-—–]?\s*$|\bI\s+(?:now\s+|formally\s+|therefore\s+|accordingly\s+|also\s+)?(?:beg\s+(?:leave\s+)?to\s+)?move\b"
+# a paragraph that carries a reading on: it opens with a quotation mark, an ellipsis, a list label or a lower-case word
+const READING_GOES_ON = r"^\s*(?:[\"'“‘]|\.\s*\.\s*\.|…|\(\s*(?:\d{1,3}|[a-zA-Z]|[ivxIVX]{1,5})\s*\)|[a-z])"
+
+"the row introduces a passage it reads out (#149)"
+lead_in(content) = occursin(LEAD_IN, content) && !occursin(NOT_LEAD_IN, content) &&
+    !(occursin(r"(?i)\bthe\s+following\b", content) && occursin(r"(?i)\b(?:present|table|lay|papers)\b", content))
+
+"""#149 (conventions: "a passage a member quotes … is `quote` with the member's id"): before 2011 the XML seldom marks a passage a member reads out. After a spoken row
+ending in a lead-in colon, the next paragraph by the same speaker is a `quote` with their id, and so is each paragraph
+after it that carries the reading on (`READING_GOES_ON`). In v2 gold, 502 of 512 such next rows are quotes by the same
+speaker."""
+function quoted_passages!(rows, h)
+    nid = Symbol("name.id")
+    topic(r) = (string(r[h[:debateinfo]]), string(r[h[:subdebateinfo]]))
+    reader, rtopic, first_ = nothing, nothing, false
+    for x in rows
+        r = x[1]
+        content = strip(string(r[h[:content]]))
+        if !isnothing(reader)
+            same = string(r[h[nid]]) == reader && topic(r) == rtopic
+            ok = same && (isflag(r, h, :speech_flag) || isflag(r, h, :answer_flag) || isflag(r, h, :question_flag)) &&
+                 (first_ || occursin(READING_GOES_ON, content)) && !occursin(LEAD_IN, content) && !isempty(content)
+            if ok
+                set_type!(r, h, :quote_flag; clear=SPOKEN_FLAGS)
+                first_ = false
+                continue
+            end
+            reader = nothing
+        end
+        spoken = isflag(r, h, :speech_flag) || isflag(r, h, :answer_flag) || isflag(r, h, :question_flag)
+        if spoken && real_id(r, h) && lead_in(content)
+            reader, rtopic, first_ = string(r[h[nid]]), topic(r), true
+        end
+    end
+    return rows
 end
 
 # a <speech> element, and what lies within it: "/speech[10]/interjection[44]/talk.start/para" -> ("…/speech[10]", "interjection[44]/…")

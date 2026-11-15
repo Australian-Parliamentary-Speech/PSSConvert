@@ -26,6 +26,8 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
 
 - **Petitions** (Australian-Parliamentary-Speech/PSSConvert#157, decided 15/11/2026): a petition row has the id of the member who presented it, from the XML's presenter fields or from the petition's "by …" line (the first member named), and the Clerk's fixed id `10001` where no member is named. The Clerk's own rows are `10001`. House 24/02/1987's single row for the whole lodged list is split into one row per petition. Each change is in `../gold_standard_v2_notes/petitions_157.csv`.
 
+- **Read-out passages** (Australian-Parliamentary-Speech/PSSConvert#149, approved 15/11/2026): a passage a member reads out after a lead-in such as "he said:" or "the report states:" is `quote` with the member's id, under the Quotations convention above. An independent Fable reviewer, blind to the parser and the gold, labelled the paragraphs after 218 such lead-ins from the text alone: quote, the member's own words, or a mix with the point where one gives way to the other. Where v2 kept a quoted passage inside a speech, question or answer row, that row is split and the passage recoded to `quote`: 184 passages, about 9,500 words, on 11 days. The 16 cases the reviewer marked unsure, 4 passages that are not in the gold text, and 4 gold `quote` rows the reviewer read as partly the member's own words are left as they were. Each recoded passage is in `../gold_standard_v2_notes/quotes_149.csv`; the review packet, the reviewer's labels and the recode script are in `pipeline/notes/gold/review_149/`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
