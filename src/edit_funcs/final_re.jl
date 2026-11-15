@@ -29,6 +29,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             presiding = presiding_phid!(row,header_to_num,house,date,heads)
             presiding = presiding_id!(row,header_to_num,presiding)
             nonspeech_type = apply_conventions!(row,header_to_num)
+            nonspeech_type == "written_answer" && answer_head_id!(row,header_to_num,house,date,dids)
             prev_wa = nonspeech_type == "written_answer" ? written_answer_id!(row,header_to_num,prev_wa) : nothing
             nonspeech_type, doc = incorporated!(row,header_to_num,nonspeech_type,doc,presenter)
             # #142: a printed notice of motion is the member's, and so is its text on the rows after it

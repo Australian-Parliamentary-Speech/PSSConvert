@@ -19,6 +19,7 @@ function re(input_fn,output_fn,::Type{<:AbstractEditPhase})
 end
 
 function edit_row(row,header_to_num)
+    row = rejoin_split_name(row,header_to_num)
     row = find_speaker_content(row,header_to_num)
 #    row = remove_the_speaker(row,header_to_num)
     row = delete_semicolon(row,header_to_num)
@@ -26,6 +27,31 @@ function edit_row(row,header_to_num)
     row = final_name_attempt(row,header_to_num)
     row = delete_talker_from_content(row,header_to_num)
     row = remove_bits(row,header_to_num)
+    return row
+end
+
+# #89: a speaker heading split across two spans in the XML ("The " | "PRESIDENT:", "Se" | "nator Wong:"): the link holds
+# only the first part, and the content opens with the whole heading or with the rest of it
+const SPLIT_HEAD = r"^((?:The\s+(?:(?:ACTING\s+)?DEPUTY\s+|TEMPORARY\s+)?(?:PRESIDENT|SPEAKER|CHAIR(?:MAN)?)|Senator\s+(?:the\s+Hon\.?\s+)?[A-Z][A-Za-z'’\-]+|(?:Mr|Mrs|Ms|Dr)\s+[A-Z][A-Za-z'’\-]+)(?:\s*\([^)]{1,120}\)){0,2})\s*:\s*"
+
+"""#89: a name that is only the start of a heading ("The", "Se", "The DE") and a content that goes on with the rest
+("PRESIDENT: Order!") become the whole heading as the name, and the words after it as the content."""
+function rejoin_split_name(row, header_to_num)
+    name = string(row[header_to_num[:name]])
+    content = string(row[header_to_num[:content]])
+    (name == "N/A" || content == "N/A" || ncodeunits(strip(name)) > 6) && return row
+    n = strip(name)
+    # the OCR or the spans can leave a space inside the word: "Se nator HUME", "T he PRESIDENT"
+    respaced = startswith(content, n * " ") ? n * content[nextind(content, ncodeunits(n) + 1):end] : content
+    for joined in (content, respaced, name * content, rstrip(name) * " " * lstrip(content))
+        m = match(SPLIT_HEAD, joined)
+        # the first part of the heading is the name, and the rest is the start of the content
+        if !isnothing(m) && ncodeunits(m.captures[1]) > ncodeunits(strip(name)) + 1 && startswith(m.captures[1], strip(name))
+            row[header_to_num[:name]] = String(m.captures[1])
+            row[header_to_num[:content]] = joined[m.offset+ncodeunits(m.match):end]
+            return row
+        end
+    end
     return row
 end
 
@@ -132,7 +158,9 @@ function edit_interjections(row,header_to_num)
         if m != nothing && length(split(content," "))<5
             split_content = split(content,m.match)
             talker = split_content[1]
-            row[header_to_num[:name]] = clean_text(talker)
+            # #109: "Opposition members" already taken as the name by find_speaker_content leaves nothing before
+            # "interjecting": keep that name
+            isempty(strip(talker)) || (row[header_to_num[:name]] = clean_text(talker))
             edit_flag(row,header_to_num)
        end
     elseif content == "N/A"
