@@ -7,7 +7,7 @@
 
 const GOVERNOR_GENERAL = "GOVERNOR-GENERAL"
 
-const I_MOVE = raw"\bI\s+(?:now\s+|formally\s+|therefore\s+|accordingly\s+|also\s+)?move\s*(?:,?\s*(?:as\s+an\s+amendment|by\s+leave|in\s+(?:its|his|her)\s+place)\b[^:—–\-]{0,40}?)?\s*[:—–\-]+\s*"
+const I_MOVE = raw"\bI\s+(?:now\s+|formally\s+|therefore\s+|accordingly\s+|also\s+)?(?:beg\s+(?:leave\s+)?to\s+)?move\s*(?:,?\s*(?:as\s+an\s+amendment|by\s+leave|in\s+(?:its|his|her)\s+place)\b[^:—–\-]{0,40}?)?\s*[:—–\-]+\s*"
 # the first words of the text moved
 const MOTION_START = raw"(?:That\b|\(\s*(?:\d{1,2}|[a-z]|[ivx]{1,4})\s*\)|Schedule\b|Clause\b|Page\b|Omit\b|Item\b|Leave\s+out\b|Insert\b|At\s+the\s+end\b)"
 const I_MOVE_END = Regex("(?i)" * I_MOVE * raw"$")
@@ -64,7 +64,9 @@ function motion_after!(rows, h)
         if !isnothing(mover)
             unnamed = isna(r[h[:name]]) && isna(r[h[nid]])
             same = !isna(mover[2]) ? string(r[h[nid]]) == mover[2] : string(r[h[:name]]) == mover[1]
-            fits = (isflag(r, h, :quote_flag) && (unnamed || same)) ||
+            # #161: the text in a <motion> element straight after "I move:" is the mover's, whatever id it arrived with
+            in_motion = occursin(MOTION_ELEMENT, string(r[h[:path]])) && !isflag(r, h, :petition_flag)
+            fits = (first_ && in_motion) || (isflag(r, h, :quote_flag) && (unnamed || same)) ||
                    (spoken_row(r, h) && same && !isflag(r, h, :interjection_flag)) ||
                    (isflag(r, h, :non_speech_flag) && x[3] == "other" && unnamed)
             opens = (occursin(MOTION_FIRST, content) || occursin(MOTION_ELEMENT, string(r[h[:path]]))) && !isflag(r, h, :petition_flag)

@@ -258,6 +258,11 @@ end
 
 const UPON_NOTICE = r"(?i)upon\s+notice"
 const QUESTION_TIME = r"(?i)questions?\s+without\s+notice"
+# #156: the Senate's debate on the answers ("ANSWERS TO QUESTIONS WITHOUT NOTICE") is not question time, and question
+# time ends where a member moves to take note of the answers or the Prime Minister asks for further questions to be
+# placed on the notice paper
+const ANSWERS_DEBATE = r"(?i)^\s*answers\s+to\s+questions"
+const QUESTION_TIME_ENDS = r"(?i)\btake\s+note\s+of\s+(?:the\s+)?answers?\b|\bfurther\s+questions\s+be\s+placed\s+on\s+the\s+notice\s+paper"
 const GENERIC_IDS = ("10000", "10001", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT", "GOVERNOR-GENERAL")
 year_of(date) = something(tryparse(Int, first(string(date), 4)), 0)
 spoken_row(r, h) = any(f -> isflag(r, h, f), SPOKEN_FLAGS)
@@ -317,10 +322,13 @@ function day_rules!(rows, h, date)
                 rows[i][3] = "written_answer"
             end
         elseif 1981 <= yr <= 1997 && occursin(QUESTION_TIME, t[1]) && !occursin(QUESTION_TIME, t[2]) &&
+               !occursin(ANSWERS_DEBATE, t[1]) &&
                !any(i -> isflag(rows[i][1], h, :question_flag) || isflag(rows[i][1], h, :answer_flag), idx)
             asker = string(rows[spoken[1]][1][h[nid]])
             for i in spoken
                 r = rows[i][1]
+                # #156: after the motion to take note of the answers, or the call for further questions on notice
+                occursin(QUESTION_TIME_ENDS, string(r[h[:content]])) && break
                 isflag(r, h, :speech_flag) || continue
                 set_type!(r, h, string(r[h[nid]]) == asker ? :question_flag : :answer_flag; clear=SPOKEN_FLAGS)
             end
