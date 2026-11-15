@@ -25,5 +25,6 @@ Eight sitting days, coded in November 2026 to the same conventions as v2 (`pipel
 - House 17/05/1983: 14 petition rows are recoded to the convention decided on 15/11/2026 (#157). Each petition carries its first presenter's id, from the XML petition's `nameids`; the Clerk's lodging statement stays 10001.
 - One old ParlInfo code (014, MacKellar) is mapped to 0I4 by `src/data/legacy_ids.csv`.
 - Each row is logged in `../gold_standard_v3_notes/petitions_157.csv`.
+- Restated motions (#169, decided 15/11/2026): the motion restated after "Debate resumed … on motion by X:" is non-speech `procedural` with no id. On Senate 01/05/1968 one row coded `motionnospeech` with the mover's id is recoded. It is logged in `../gold_standard_v3_notes/resumed_169.csv`.
 
 **Scoring.** `python3 -I test/score_v2.py --house <house|senate> test/gold_standard_v3 test/gold_outputs/<house> test/gold_standard_v3/baseline.csv`. The tolerance is the same as for v2.
