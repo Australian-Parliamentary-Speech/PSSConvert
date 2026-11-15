@@ -86,6 +86,27 @@ function apply_conventions!(row, h)
     spoken = any(f -> isflag(row, h, f), SPOKEN_FLAGS)
     content = strip(string(row[h[:content]]))
 
+    # #122: a bill title under a link (2011 on: <a href="r6944"><p>… Bill 2022</p></a>) is a heading, not speech, and the
+    # link target is not a speaker id (§3: headings have no id)
+    if occursin(r"^[rs]\d+$", nid)
+        row[h[Symbol("name.id")]] = "N/A"
+        nid = "N/A"
+        if spoken && isna(name)
+            set_type!(row, h, :non_speech_flag)
+            spoken = false
+        end
+    end
+
+    # #89: "Senator" split across spans in the source ("Sen ator WATERS"), so the name is cut to "Sen": take it from the
+    # printed speaker line
+    if occursin(r"^S(?:e(?:n(?:a(?:t(?:o)?)?)?)?)?$", strip(string(name))) && haskey(h, :Speaker)
+        m = match(r"^\s*S\s*e\s*n\s*a\s*t\s*o\s*r\s+([A-Z][A-Za-z'’\-]+(?:\s+[A-Z][A-Za-z'’\-]+){0,3}?)\s*(?:\(|:|$)", string(row[h[:Speaker]]))
+        if !isnothing(m)
+            row[h[:name]] = "Senator " * m.captures[1]
+            name = row[h[:name]]
+        end
+    end
+
     # #93: the Speaker, President and Chair have the floor as of right
     if spoken && (nid == "10000" || isna(nid)) && !isnothing(presiding_office(name)) && !occursin(NOT_PRESIDING, string(name))
         set_type!(row, h, :speech_flag; clear=SPOKEN_FLAGS)
@@ -114,6 +135,14 @@ function apply_conventions!(row, h)
     # #89: a short procedural line with no speaker is a stage direction
     if spoken && isna(name) && isna(row[h[Symbol("name.id")]]) && (is_procedural(content) || occursin(DIVISION, content))
         set_type!(row, h, :non_speech_flag)
+        spoken = false
+    end
+    # #89: so is a short row that is nothing but a procedural line, whoever the source names ("Bill, as amended, agreed
+    # to." under the minister, "Question resolved in the negative." under the President): §3, no id
+    if spoken && length(split(content)) < 12 && is_procedural(content) && !occursin(r"\?\s*$", content) &&
+       !occursin(r"(?i)\b(?:I|we|my|our)\b", content)
+        set_type!(row, h, :non_speech_flag)
+        row[h[Symbol("name.id")]] = "N/A"
         spoken = false
     end
 
