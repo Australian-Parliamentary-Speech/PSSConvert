@@ -42,9 +42,11 @@ def main(root, record=None):
                 h.update(block)
         if h.hexdigest() != r["sha256"]:
             problems.append(f"changed: {r['file']}")
-    for d, _, files in os.walk(root):
+    # only the input folders: the archive's sources/ holds the raw files the inputs were built from
+    for sub in ("house_xmls", "senate_xmls"):
+      for d, _, files in os.walk(os.path.join(root, sub)):
         for f in files:
-            rel = os.path.relpath(os.path.join(d, f), root)
+            rel = os.path.relpath(os.path.join(d, f), root).replace(os.sep, "/")
             if rel.endswith(".xml") and rel not in listed:
                 problems.append(f"not in manifest: {rel}")
     for p in problems[:50]:
