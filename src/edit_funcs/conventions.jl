@@ -384,6 +384,9 @@ function day_rules!(rows, h, date)
     end
     # #149: before 2011, a passage a speaker reads out after a lead-in ending in a colon is a quote by them
     yr < 2011 && quoted_passages!(rows, h)
+    # #169: a motion restated when a debate resumes is procedural, with no id
+    rows = restated_motions!(rows, h)
+    chair_question!(rows, h)
     # #142: the text moved after "I move:" is a quote by the mover
     rows = motion_after!(rows, h)
     # #157: petitions the Clerk lodges, and the Clerk's own words, have 10001
