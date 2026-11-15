@@ -81,7 +81,8 @@ end
 "#136: fills name.id for a named spoken row that has none. Returns true if it did."
 function fill_id!(row, h, house, date, dids)
     nid = Symbol("name.id")
-    any(f -> isflag(row, h, f), SPOKEN_FLAGS) || return false
+    # a formal motion moved without a speech (<motionnospeech>, 1998-2010) is the named member's too
+    (any(f -> isflag(row, h, f), SPOKEN_FLAGS) || isflag(row, h, :motionnospeech_flag)) || return false
     isna(row[h[nid]]) || return false
     id = resolve_id(row[h[:name]], house, date, dids)
     isnothing(id) && return false
