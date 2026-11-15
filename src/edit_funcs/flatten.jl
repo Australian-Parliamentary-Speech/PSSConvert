@@ -162,6 +162,10 @@ function stop_before_next_talker(row_no,rows,header_to_num; cur=row_no - 1)
     # their own, so the passage can be made a quote; merge_turns joins them again where it is not
     elseif split_at_lead_in(row_no, rows, header_to_num)
         return true
+    # #105: a printed notice ("Senator Woodley to move, on the next day of sitting:") is its member's, not the speech
+    # or document before it in the same element
+    elseif occursin(NOTICE_PRINTED, strip(string(get_row(rows,row_no)[content_pos])))
+        return true
     else
         next_row = get_row(rows,row_no)
         name_pos = header_to_num[:name]

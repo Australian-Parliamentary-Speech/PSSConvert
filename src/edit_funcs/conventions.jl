@@ -76,6 +76,9 @@ const TOOK_CHAIR = r"(?i)^(?:(?:mr\.?|madam|the)\s+(?:acting\s+|deputy\s+)*(?:sp
 is_procedural(content) = occursin(PROCEDURAL_LINE, content) || occursin(PROCEDURAL_EXTRA, content) || occursin(TOOK_CHAIR, content) ||
                          (occursin(PROCEDURAL_QUALIFIED, content) && length(split(content)) <= 60)
 
+"#89: a short line that is nothing but a procedural record, not a question and not in the first person"
+short_procedural(x) = length(split(x)) < 12 && is_procedural(x) && !occursin(r"\?\s*$", x) && !occursin(r"(?i)\b(?:I|we|my|our)\b", x)
+
 # #146: the same record with a qualifier before the verb: "Amendment, by leave, withdrawn.", "Question, as amended,
 # agreed to.", "Amendment (by Sir George Turner) agreed to-", "Proposed vote agreed to."
 const PROCEDURAL_QUALIFIED = r"(?i)^(?:question|amendments?|(?:new\s+|postponed\s+)?(?:sub-?)?clauses?|motion|bill|schedule|title|preamble|requests?|proposed\s+votes?|votes?|items?|divisions?)\b(?:\s+[^\s,.!?()]+){0,4}?(?:\s*,[^,.!?]{1,40},)?(?:\s*\([^)]{1,60}\))?\s*,?\s*(?:agreed\s+to|negatived|withdrawn|reported|not\s+insisted\s+(?:on|upon)|insisted\s+(?:on|upon)|lapsed)\b"
@@ -139,8 +142,7 @@ function apply_conventions!(row, h)
     end
     # #89: so is a short row that is nothing but a procedural line, whoever the source names ("Bill, as amended, agreed
     # to." under the minister, "Question resolved in the negative." under the President): §3, no id
-    if spoken && length(split(content)) < 12 && is_procedural(content) && !occursin(r"\?\s*$", content) &&
-       !occursin(r"(?i)\b(?:I|we|my|our)\b", content)
+    if spoken && short_procedural(content)
         set_type!(row, h, :non_speech_flag)
         row[h[Symbol("name.id")]] = "N/A"
         spoken = false
@@ -172,6 +174,29 @@ function presiding_id!(row, h, presiding)
     return presiding
 end
 
+# #106: a minister's printed reply that opens with their heading, the title often garbled by the OCR:
+# "Br Cass-The answer to the honourable member's question is as follows: …"
+const ANSWER_HEAD = r"^\s*(Mr|Br|Mi|Mir|Mrs|Ms|Dr|Sir|Senator)\.?\s*((?:Mc|Mac|O'|D')?[A-Z][A-Za-z'’\-]+)\s*[-—–]+\s*"
+const ANSWER_OPENS = r"(?i)^(?:the\s+answers?\s+to\s+the\s+(?:right\s+)?hono(?:u)?rable|the\s+answers?\s+(?:is|are)\b)"
+
+"""#106: a written answer that opens with a speaker heading is that member's: the heading's surname, where it is one
+member (the same day, else the members list, #136), gives the row its id."""
+function answer_head_id!(row, h, house, date, dids)
+    content = string(row[h[:content]])
+    m = match(ANSWER_HEAD, content)
+    isnothing(m) && return false
+    occursin(ANSWER_OPENS, content[m.offset+ncodeunits(m.match):end]) || return false
+    title = m.captures[1] in ("Mr", "Mrs", "Ms", "Dr", "Sir", "Senator") ? m.captures[1] : "Mr"
+    name = title * " " * m.captures[2]
+    id = resolve_id(name, house, date, dids)
+    isnothing(id) && return false
+    if string(row[h[Symbol("name.id")]]) != id
+        row[h[Symbol("name.id")]] = id
+        row[h[:name]] = name
+    end
+    return true
+end
+
 """#106: a written answer's later paragraphs carry no id in the source; they belong to the member whose
 paragraph they follow, within the same question (subdebateinfo). `prev` is (subdebateinfo, name, id) or nothing."""
 function written_answer_id!(row, h, prev)
@@ -197,12 +222,18 @@ function incorporated!(row, h, nonspeech_type, state, tabler)
     if occursin(READ_AS_FOLLOWS, content)
         return nonspeech_type, (tabler, 0)
     end
+    # #105: the note printed at the end of a row ("…leave is granted. (The document read as follows)-") starts the
+    # document too, when the row is not spoken (a spoken row has the note split off as a row of its own, #134)
+    if !spoken_row(row, h) && occursin(NOTE_AT_END, content)
+        return nonspeech_type, (tabler, 0)
+    end
     nid = Symbol("name.id")
     # the document is a quote, or a row with no named speaker; a named member's speech right after "read as follows"
     # is the member resuming, because the document itself (often a table, #100) was not kept
     if !isnothing(state) && (isflag(row, h, :quote_flag) || (state[2] == 0 && isna(row[h[:name]]))) && !isflag(row, h, :petition_flag)
         set_type!(row, h, :non_speech_flag)
-        isna(row[h[nid]]) && !isnothing(state[1]) && (row[h[nid]] = state[1])
+        # an unnamed paragraph given UNKNOWN as speech is the tabling member's document too
+        (isna(row[h[nid]]) || string(row[h[nid]]) == "UNKNOWN") && !isnothing(state[1]) && (row[h[nid]] = state[1])
         return "incorporated", (state[1], state[2] + 1)
     end
     if nonspeech_type == "incorporated" && isna(row[h[nid]]) && !isnothing(tabler)
@@ -248,6 +279,9 @@ function stage_pieces(content)
     spans = [(nextind(text, cuts[i]), cuts[i+1]) for i in 1:length(cuts)-1 if cuts[i] < cuts[i+1]]
     sentence(sp) = strip(text[sp[1]:thisind(text, sp[2])])
     function stage(x)
+        # #89: a short sentence that is a procedural record on its own ("Bill, as amended, agreed to."), as a whole row
+        # of it already is in apply_conventions!
+        short_procedural(x) && return true
         m = match(STAGE_SENTENCE, x)
         isnothing(m) && return false
         return length(split(x)) <= 40 && length(split(x[nextind(x, 0, length(m.match)):end])) <= 8
@@ -278,6 +312,7 @@ const BILL_LINK = r"^[rs]\d+$"
 const DOC_NOUN = raw"(?:document|answer|table|statement|speech|speeche|letter|list|schedule|report|eulogy|tribute|attachment|response|paper)s?"
 const DOCUMENT_FOLLOWS = Regex(raw"(?:\(\s*The\s+(?:\w+\s+){0,2}?" * DOC_NOUN * raw"\s+reads?|\bThe\s+(?:\w+\s+){0,2}?" * DOC_NOUN *
                                raw"\s+read)\s+as\s+follows\s*\)?\s*[-—–:.]*")
+const NOTE_AT_END = Regex(DOCUMENT_FOLLOWS.pattern * raw"\s*$")
 
 """#134: the note "The document read as follows" inside a spoken piece is split off as a row of its own (`:note`,
 non-speech with no id, as gold codes it), and the words after it, if any, are the document (`:document`, §3). A piece

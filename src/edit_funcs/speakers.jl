@@ -18,7 +18,8 @@ end
 """The name words of a printed speaker name, titles and brackets taken out: "Mr. CONROY (Werriwa)" → ["CONROY"],
 "SenatorSir FREDERICK SARGOOD" → ["FREDERICK", "SARGOOD"], "CONROY, Alfred" → ["Alfred", "CONROY"] (surname last)."""
 function name_words(name)
-    s = string(name)
+    # #87: a curly apostrophe ("O’Neil") is the members list's straight one
+    s = replace(string(name), '’' => '\'')
     s = replace(s, r"\([^)]*\)?" => " ", r"\[[^\]]*\]?" => " ", r"[\"“”]" => " ")
     # titles run onto the next word in the OCR text: "SenatorSir", "Mr.Isaacs", "SirWilliam"
     for _ in 1:2
