@@ -92,9 +92,9 @@ end
 # #137: a speaker heading printed in the text, at the start of the row or of a sentence:
 # title, name in capitals, then an optional electorate and time, then ".-" (or "." straight onto the next word)
 # #147: the OCR often garbles "Mr." ("Mi.", "Mir.", "Mi-.", "Mr.-"), and a heading can give initials ("Mr. L. E. GROOM")
-const HEAD_TITLE = raw"(?:Mr\.?\s*-\.?|Mir?\s*[.\-]{1,3}|Mir\b|Mr\.?|Mrs\.?|Dr\.?|Senator|Col\.?|Colonel|Major|Captain|General|Sir)(?:\s*(?:Sir|Major|Colonel|Col\.|Dr\.?|the\s+Hon\.?))?"
+const HEAD_TITLE = raw"(?:Mr\.?\s*-\.?|Mir?\s*[.\-]{1,3}|Mir\b|M[xn][;:,.]|111-?\.|Mr[,;]|Mr\.?|Mrs\.?|Dr\.?|Senator|Col\.?|Colonel|Major|Captain|General|Sir)(?:\s*(?:Sir|Major|Colonel|Col\.|Dr\.?|the\s+Hon\.?))?"
 const HEAD_NAME = raw"(?:[A-Z]\.\s*){0,3}(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]{2,}(?:\s+(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]+){0,3}"
-const GARBLED_MR = Regex("^(?:Mr\\.?\\s*-\\.?|Mir?\\s*[.\\-]{1,3}|Mir\\b)\\s*")
+const GARBLED_MR = Regex("^(?:Mr\\.?\\s*-\\.?|Mir?\\s*[.\\-]{1,3}|Mir\\b|M[xn][;:,.]|111-?\\.|Mr[,;])\\s*")
 const HEAD_TAIL = raw"\s*(?:,?\s*\([^)]{2,40}\)?)?\s*(?:\[[^\]]{1,15}?\]?|\(\d{1,2}[.:]\s*\d{2}[^)]{0,8}\))?"
 const SPEAKER_HEAD = Regex("(?:^|(?<=[.!?:\"'”’)\\]])\\s+)(" * HEAD_TITLE * "\\s*" * HEAD_NAME * ")" * HEAD_TAIL *
                            raw"(?:\.?\s*[-—–]+\s*|\.(?=[A-Z]))")
@@ -106,7 +106,7 @@ const SPEAKER_HEAD_SGML = Regex("(?:^|(?<=[.!?\"'”’)\\]])\\s+)(" * HEAD_TITL
 # space ("(Wannon).Being", "(Western Australia). When", "[45lThe")
 const HEAD_NAME_LOOSE = raw"(?:[A-Z]\.\s*){0,3}(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]{2,}(?:,?\s+(?:Mc|Mac|O'|D')?[A-Z][A-Z'’\-]+){0,3}"
 const SPEAKER_HEAD_BRACKET = Regex("(?:^|(?<=[.!?:\"'”’)\\]])\\s+)(" * HEAD_TITLE * "\\s*" * HEAD_NAME_LOOSE * ")" *
-                                   raw"\s*,?\s*\([A-Z][^)]{1,40}\)(?:\s*[\[(]?[\dA-Za-z.:,]{1,8}?[\])]?)?" *
+                                   raw"\s*,?\s*\([A-Z][^)]{1,40}\)(?:\s*[\[(|]?\s?[\dA-Za-z.:,]{1,8}?[\])|]?)?" *
                                    raw"(?:\.?\s*[-—–]+\s*|\.\s*(?=[A-Z\"“])|(?=[A-Z][a-z]))")
 const NOT_HEAD_NAME = r"^(?:SPEAKER|PRESIDENT|CHAIRMAN|CHAIR|DEPUTY|ACTING|TEMPORARY|CLERK)\b"
 
