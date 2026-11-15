@@ -136,6 +136,8 @@ end
 
 function if_speaker_then_speech(row,header_to_num)
     speaker, id = row[header_to_num[:name]],row[header_to_num[Symbol("name.id")]]
+    # #178: a table stays non-speech, whoever it belongs to
+    is_table_row(row, header_to_num) && return row
     if (speaker != "N/A" || id != "N/A") && (row[header_to_num[:chamber_flag]] != 3)
         if row[header_to_num[:non_speech_flag]] == 1
             row[header_to_num[:non_speech_flag]] = 0

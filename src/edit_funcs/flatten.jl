@@ -11,7 +11,8 @@ function flatten(input_fn, output_fn,::Type{<:AbstractEditPhase})
     talker = nothing
     # #100: the speaker of a table just written, for the paragraph after it (the table kept the two apart)
     table_talker = nothing
-    path_pos = get(header_to_num, :path, 0)
+    table_parent = ""
+    path_pos = header_to_num[:path]
 
     open(output_fn, "w") do io
         write_row_to_io(io,string.(headers_))
@@ -25,14 +26,15 @@ function flatten(input_fn, output_fn,::Type{<:AbstractEditPhase})
                         for (c, v) in zip(ident, talker)
                             row[header_to_num[c]] = v
                         end
-                    elseif !isnothing(table_talker) && string(row[header_to_num[:name]]) == "N/A"
+                    elseif !isnothing(table_talker) && string(row[header_to_num[:name]]) == "N/A" &&
+                           startswith(string(row[path_pos]), table_parent * "/")
                         for (c, v) in zip(ident, table_talker)
                             row[header_to_num[c]] = v
                         end
                     end
                     string(row[header_to_num[:name]]) != "N/A" && (talker = [row[header_to_num[c]] for c in ident])
                     row_content = row[content_pos]
-                    children_content,is_written = find_all_child_speeches(row_index,rows,header_to_num,is_written)
+                    children_content,is_written,deferred = find_all_child_speeches(row_index,rows,header_to_num,is_written)
                     if row_content != "N/A"
                         row[content_pos] = row_content*" $children_content"
                     else
@@ -41,10 +43,19 @@ function flatten(input_fn, output_fn,::Type{<:AbstractEditPhase})
                 else
                     row_ = @. collect(row)
                     row = row_[1]
+                    deferred = Int[]
                 end
                 write_row_to_io(io,row)
-                is_table = path_pos > 0 && occursin(r"/table(?:\[\d+\])?$", string(row[path_pos]))
-                table_talker = is_table && string(row[header_to_num[:name]]) != "N/A" ? [row[header_to_num[c]] for c in ident] : nothing
+                # #178: a table printed inside the paragraphs just written comes straight after them
+                for k in deferred
+                    write_row_to_io(io, get_row(rows, k))
+                end
+                # #100: a table that starts its element passes its speaker to the next unnamed row of the same element
+                table_talker = nothing
+                if isempty(deferred) && is_table_row(row, header_to_num) && string(row[header_to_num[:name]]) != "N/A"
+                    table_talker = [row[header_to_num[c]] for c in ident]
+                    table_parent = parent_path(row[path_pos])
+                end
             end
             row_index += 1
         end
@@ -55,31 +66,56 @@ end
 """
 function find_all_child_speeches(row_no,rows,header_to_num,is_written)
 
-Find all the speeches that belong to a single talker 
+Find all the speeches that belong to a single talker. A table printed inside them (#178) does not end them: it is
+returned in `deferred`, to be written straight after them.
 """
 function find_all_child_speeches(row_no,rows,header_to_num,is_written)
-    #debug
-    #    content_pos = header_to_num[:content]
-    #    row = @. collect(rows[row_no])[1]
-    #    log = false
-    #    if occursin("On behalf of the Standing Committee on Petitions",row[content_pos])
-    #        log = true
-    #    end
-
     content = ""
-    while !(stop_before_next_talker(row_no+1,rows,header_to_num)) && (row_no < length(rows))
-        row = get_row(rows,row_no + 1)
-        content_ = row[header_to_num[:content]]
+    deferred = Int[]
+    n = length(rows)
+    last = row_no
+    k = row_no + 1
+    while k <= n
+        if is_table_row(get_row(rows, k), header_to_num)
+            j = k
+            while j <= n && is_table_row(get_row(rows, j), header_to_num)
+                j += 1
+            end
+            # the tables sit among this group's paragraphs: the same element holds them and the paragraph after them
+            inside = j <= n && all(t -> table_inside(get_row(rows, last), get_row(rows, t), get_row(rows, j), header_to_num), k:j-1) &&
+                     !stop_before_next_talker(j, rows, header_to_num; cur=last)
+            inside || break
+            for t in k:j-1
+                push!(deferred, t)
+                is_written[t] = true
+            end
+            k = j
+        end
+        stop_before_next_talker(k, rows, header_to_num; cur=last) && break
+        content_ = get_row(rows, k)[header_to_num[:content]]
         if content_ != "N/A"
             content *= " $content_"
         end
-        row_no += 1
-        is_written[row_no] = true
-        if row_no == length(rows)
-            return content,is_written
-        end
+        is_written[k] = true
+        last = k
+        k += 1
     end
-    return content,is_written
+    return content,is_written,deferred
+end
+
+"#100: the row is a table"
+is_table_row(row, header_to_num) = occursin(r"/table(?:\[\d+\])?$", string(row[header_to_num[:path]]))
+
+"the XML path of the element that holds this one"
+parent_path(path) = (p = string(path); i = findlast('/', p); isnothing(i) ? p : p[1:i-1])
+
+"#178: a table between two paragraphs of one group, in the same element as both"
+function table_inside(before, table, after, header_to_num)
+    pp = parent_path(table[header_to_num[:path]])
+    within(r) = startswith(string(r[header_to_num[:path]]), pp * "/")
+    same_topic(r) = r[header_to_num[:debateinfo]] == table[header_to_num[:debateinfo]] &&
+                    r[header_to_num[:subdebateinfo]] == table[header_to_num[:subdebateinfo]]
+    return within(before) && within(after) && same_topic(before) && same_topic(after)
 end
 
 function equiv(current_row,next_row,header_to_num)
@@ -102,20 +138,23 @@ function split_at_lead_in(row_no, rows, header_to_num)
     equiv(prev, this, header_to_num) || return false
     # only a spoken paragraph: notices, lists and other non-speech rows are left as they were
     any(f -> haskey(header_to_num, f) && string(this[header_to_num[f]]) == "1", (:speech_flag, :question_flag, :answer_flag)) || return false
-    # not inside an incorporated document ("The statement read as follows —", #105): it stays one non-speech row
+    (lead_in(strip(string(prev[content_pos]))) ||
+     (row_no > 2 && lead_in(strip(string(get_row(rows, row_no - 2)[content_pos]))))) || return false
+    # not inside an incorporated document ("The statement read as follows —", #105): it stays one non-speech row.
+    # #178: look back through the whole run of paragraphs, however long the document (tables and the row just before
+    # are passed over)
     k = row_no - 1
-    while k >= 1 && k >= row_no - 60
+    while k >= 1
         r = get_row(rows, k)
         occursin(INCORPORATED, strip(string(r[content_pos]))) && return false
-        (k == row_no - 1 || equiv(r, this, header_to_num)) || break
+        (k == row_no - 1 || is_table_row(r, header_to_num) || equiv(r, this, header_to_num)) || break
         k -= 1
     end
-    return lead_in(strip(string(prev[content_pos]))) ||
-           (row_no > 2 && lead_in(strip(string(get_row(rows, row_no - 2)[content_pos]))))
+    return true
 end
 
-function stop_before_next_talker(row_no,rows,header_to_num)
-    current_row = get_row(rows,row_no - 1)
+function stop_before_next_talker(row_no,rows,header_to_num; cur=row_no - 1)
+    current_row = get_row(rows,cur)
     content_pos = header_to_num[:content]
     if is_stage_direction(rows[row_no],header_to_num)
         return true

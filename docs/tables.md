@@ -21,6 +21,8 @@ Within `content`:
 - An empty cell is kept, as nothing between two bars: `a | | c`. Split a row on `|` and trim each cell, and every row keeps its number of cells.
 - Merged cells (spanning rows or columns) are not expanded, so a row can have fewer cells than the others.
 
+**Where the row is.** A table is placed straight after the row of text it is printed in: the speech, answer or tabled document (#178). That row is kept whole, as if the table were not there, so the text after the table is not split from the text before it. A table printed between two speakers, or at the start of an answer, stays in its own place. Use `path` to find a table's exact position in the source XML.
+
 Example, Senate 02/03/2004:
 ```
 Detention Location Type | 2001-2002 | 2002-2003 | 2003-31/10/03 | Total / Both Prison and Detention Centres | 6 | 11 | 0 | 17 / …
