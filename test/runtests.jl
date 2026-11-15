@@ -286,6 +286,12 @@ end
                     cmd = `python3 -I $(joinpath(@__DIR__, "score_v2.py")) --house $which_house $v2 $gold_outputpath $(joinpath(v2, "baseline.csv"))`
                     @test success(pipeline(cmd; stdout=stdout, stderr=stderr))
                 end
+                # held-out check days (#162): scored on every change, never used to design a rule
+                @testset "gold standard v3 scores do not fall" begin
+                    v3 = joinpath(@__DIR__, "gold_standard_v3")
+                    cmd = `python3 -I $(joinpath(@__DIR__, "score_v2.py")) --house $which_house $v3 $gold_outputpath $(joinpath(v3, "baseline.csv"))`
+                    @test success(pipeline(cmd; stdout=stdout, stderr=stderr))
+                end
             end
 
             if "summary" ∈ which_tests
