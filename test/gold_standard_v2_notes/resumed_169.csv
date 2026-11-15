@@ -10,3 +10,6 @@
 "senate/1978-03-02","195","To His Excellency the Governor-General MAY IT PLEASE YOUR EX","quote 8G4 -> non-speech procedural N/A"
 "senate/1978-03-02","197","At end of motion, add ', but the Senate is of the opinion th","quote 8G4 -> non-speech procedural N/A"
 "senate/2006-11-07","5","That this bill be now read a second time.","quote LI4 -> non-speech procedural N/A"
+"house/1987-02-24","365","That the House do now adjourn.","speech 10000 -> quote 10000"
+"house/2010-02-10","568","That the House do now adjourn.","non-speech procedural N/A -> quote 10000"
+"house/2025-02-12","476","That the House do now adjourn.","non-speech procedural N/A -> quote 10000"
