@@ -1,0 +1,8 @@
+[deps]
+BetterInputFiles = "c0b1955d-4702-4680-a946-720482e78a48"
+PSSConvert = "3fb2ed58-985e-428b-9a27-55663dc902eb"
+PSSUtils = "3b0d97d8-c816-44bb-9b91-056f8c661615"
+
+[sources]
+PSSConvert = {path = ".."}
+PSSUtils = {url = "https://github.com/Australian-Parliamentary-Speech/PSSUtils", rev = "e2488bed0d68292c7c5a5def29c6d18145237e7d"}

@@ -16,6 +16,8 @@ Every XML file has a date associated with two independent sources, which don't a
 
 Both dates are extracted for every file processed (`get_date` in `RunModule.jl`). When they disagree, a warning is logged, but processing continues using the **filename date** for naming output files and detecting which processing phase applies. To keep the XML-derived date available for auditing rather than discarding it once the filename date is chosen, every run writes `date_comparison.csv` to the top of `output_path`, with one row per XML file processed and two columns, `Filename Date` and `XML Date`. The test suite's dates summary test checks this file automatically and reports any mismatches - see [Usage](../../docs/src/usage.md#output-how-dates-are-determined) and [Testing](../../docs/src/test.md#dates-summary-test).
 
+**To reproduce a published release** of the CSVs from its Zenodo inputs, see [`replicate/README.md`](replicate/README.md).
+
 For install/run instructions, see the [top-level README](../../README.md) (`make run house`/`senate`/`all`) or the full [documentation](https://australian-parliamentary-speech.github.io/Scraper/), which also covers the test suite and how to extend the parser with new nodes, phases, or edit steps.
 
 ## Sample input TOML
