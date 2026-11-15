@@ -9,6 +9,9 @@ function flatten(input_fn, output_fn,::Type{<:AbstractEditPhase})
     # #149: the speaker of the last row written, for a paragraph split off after a lead-in
     ident = [c for c in (:name, Symbol("name.id"), :electorate, :party, :role) if haskey(header_to_num, c)]
     talker = nothing
+    # #100: the speaker of a table just written, for the paragraph after it (the table kept the two apart)
+    table_talker = nothing
+    path_pos = get(header_to_num, :path, 0)
 
     open(output_fn, "w") do io
         write_row_to_io(io,string.(headers_))
@@ -20,6 +23,10 @@ function flatten(input_fn, output_fn,::Type{<:AbstractEditPhase})
                     row = row_[1]
                     if split_off && !isnothing(talker) && string(row[header_to_num[:name]]) == "N/A"
                         for (c, v) in zip(ident, talker)
+                            row[header_to_num[c]] = v
+                        end
+                    elseif !isnothing(table_talker) && string(row[header_to_num[:name]]) == "N/A"
+                        for (c, v) in zip(ident, table_talker)
                             row[header_to_num[c]] = v
                         end
                     end
@@ -36,6 +43,8 @@ function flatten(input_fn, output_fn,::Type{<:AbstractEditPhase})
                     row = row_[1]
                 end
                 write_row_to_io(io,row)
+                is_table = path_pos > 0 && occursin(r"/table(?:\[\d+\])?$", string(row[path_pos]))
+                table_talker = is_table && string(row[header_to_num[:name]]) != "N/A" ? [row[header_to_num[c]] for c in ident] : nothing
             end
             row_index += 1
         end
