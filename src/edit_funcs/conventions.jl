@@ -212,7 +212,9 @@ function incorporated!(row, h, nonspeech_type, state, tabler)
 end
 
 # #108: a whole sentence that is a stage direction, inside or at the end of a spoken row
-const STAGE_SENTENCE = r"(?i)^(?:debate\s+(?:\(on\s+motion\s+by\s+[^)]{2,60}\)\s*)?(?:adjourned|interrupted|resumed)|question\s+(?:put|agreed\s+to|resolved\s+in\s+the\s+(?:affirmative|negative)|so\s+resolved\s+in\s+the\s+(?:affirmative|negative)|negatived)|(?:bill|motion|amendments?|clauses?[\w\s,]{0,30}|report|resolution)\s+(?:\(by\s+[^)]{2,60}\)\s*,?\s*)?(?:,?\s*by\s+leave,?\s*)?(?:agreed\s+to|negatived|withdrawn|amended\s+accordingly|adopted|reported)|amendment\s+\(by\s+[^)]{2,60}\)\s+proposed|leave\s+(?:not\s+)?granted|petition\s+received|progress\s+reported|ordered\s+that\s+the\s+report\s+be\s+(?:printed|made\s+a\s+parliamentary\s+paper)|report\s+made\s+a\s+parliamentary\s+paper|bill\s+read\s+a\s+(?:first|second|third)\s+time|more\s+than\s+the\s+number\s+of\s+(?:members|senators)\s+required\s+by\s+the\s+standing\s+orders?\s+having\s+risen|(?:the\s+)?(?:house|senate)\s+adjourned\s+at|[{(\[]?\s*sitting\s+suspended)"
+# #121: "Motion (by Mr Young) proposed: That the House take note of the paper." printed after a speech, with the motion
+# text it reports (procedural, as a restated motion is, #169)
+const STAGE_SENTENCE = r"(?i)^(?:motion\s+\(by\s+[^)]{2,60}\)\s*(?:[-—–]\s*by\s+leave\s*[-—–]\s*)?(?:proposed|put)\s*[:—–\-]?(?:\s*That\b[^.:]*\.)?|debate\s+(?:\(on\s+motion\s+by\s+[^)]{2,60}\)\s*)?(?:adjourned|interrupted|resumed)|question\s+(?:put|agreed\s+to|resolved\s+in\s+the\s+(?:affirmative|negative)|so\s+resolved\s+in\s+the\s+(?:affirmative|negative)|negatived)|(?:bill|motion|amendments?|clauses?[\w\s,]{0,30}|report|resolution)\s+(?:\(by\s+[^)]{2,60}\)\s*,?\s*)?(?:,?\s*by\s+leave,?\s*)?(?:agreed\s+to|negatived|withdrawn|amended\s+accordingly|adopted|reported)|amendment\s+\(by\s+[^)]{2,60}\)\s+proposed|leave\s+(?:not\s+)?granted|petition\s+received|progress\s+reported|ordered\s+that\s+the\s+report\s+be\s+(?:printed|made\s+a\s+parliamentary\s+paper)|report\s+made\s+a\s+parliamentary\s+paper|bill\s+read\s+a\s+(?:first|second|third)\s+time|more\s+than\s+the\s+number\s+of\s+(?:members|senators)\s+required\s+by\s+the\s+standing\s+orders?\s+having\s+risen|(?:the\s+)?(?:house|senate)\s+adjourned\s+at|[{(\[]?\s*sitting\s+suspended)"
 # a sentence ends at . ! ? or a closing bracket before a capital, an opening bracket or "by leave"; or at a dash before a
 # capital, including a hyphen run onto the full stop when rows are joined ("affirmative.-I move")
 const SENTENCE_BREAK = r"(?<=[.!?)\]}])\s+(?=[A-Z({\[]|by\s+leave)|(?<=[—–])\s*(?=[A-Z])|(?<=[.!?])-(?=[A-Z])"
@@ -251,7 +253,9 @@ function stage_pieces(content)
         return length(split(x)) <= 40 && length(split(x[nextind(x, 0, length(m.match)):end])) <= 8
     end
     marks = [stage(sentence(sp)) for sp in spans]
-    (length(spans) < 2 || !any(marks) || all(marks)) && return [(String(text), false)]
+    (length(spans) < 2 || !any(marks)) && return [(String(text), false)]
+    # every sentence a stage direction ("Debate (on motion by X) adjourned. Motion (by Y) proposed-"): one row each
+    all(marks) && return [(String(sentence(sp)), true) for sp in spans if !isempty(sentence(sp))]
     pieces = Tuple{String,Bool}[]
     i = 1
     while i <= length(spans)
