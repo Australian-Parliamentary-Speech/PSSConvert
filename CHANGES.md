@@ -92,3 +92,6 @@ the row, so existing columns keep their positions.
   `quote_flag = 1` with the member's `name` and `name.id`, in every era. From 2011, where the XML prints it in
   small type, the parser finds it when it opens with a quotation mark or an ellipsis or follows a paragraph that
   ends in a colon (Australian-Parliamentary-Speech/PSSConvert#148).
+- Petitions carry the id of whoever presented them: the presenter the XML gives (`<petition nameids>` in the SGML conversion, `<petitioninfo>` in ParlInfo XML), or the first member named in the petition's "by …" line, and the Clerk's fixed `name.id` `10001` where no member is named. The Clerk's own rows have `10001`. A petition of several paragraphs is one row (Australian-Parliamentary-Speech/PSSConvert#157).
+- ParlInfo's old SGML-era speaker codes (mostly 1981-1997) are replaced by Parliamentary Handbook ids from the reviewed table `src/data/legacy_ids.csv`: 169 codes, about 37,700 rows (Australian-Parliamentary-Speech/PSSConvert#88).
+- A speech that goes on after an interruption keeps its speaker: a printed heading with an electorate is read through OCR noise, and a paragraph straight under a `<speech>` with no speaker of its own is the words of the member who opened it (Australian-Parliamentary-Speech/PSSConvert#107).

@@ -18,7 +18,44 @@ function find_item(node::Node{<:PNode})
 end
 
 
+"""#157 (decided 15/11/2026): a petition is the words of whoever presented it. The presenter's Handbook id is in the
+XML: `<petition nameids="XG4" presenters="GILES">` in the SGML conversion, `<petitioninfo><name.ids><name.id>` in ParlInfo
+XML. Returns (id, name) for the petition element `e` is inside, or nothing."""
+function petition_presenter(e)
+    pet = e
+    while !isnothing(pet) && pet isa EzXML.Node && nodename(pet) != "petition"
+        hasparentnode(pet) || return nothing
+        pet = parentnode(pet)
+        nodetype(pet) == EzXML.DOCUMENT_NODE && return nothing
+    end
+    (isnothing(pet) || nodename(pet) != "petition") && return nothing
+    if haskey(pet, "nameids") && !isempty(strip(pet["nameids"]))
+        # a joint petition lists several: "TH4;OF4", "KNOWLES; PARER"; the first named presents it
+        id = first(split(strip(pet["nameids"]), r"[\s;,]+"; keepempty=false))
+        name = haskey(pet, "presenters") ? strip(first(split(pet["presenters"], r"[;,]"))) : "N/A"
+        return (String(id), String(name))
+    end
+    for c in eachelement(pet)
+        nodename(c) == "petitioninfo" || continue
+        ids = [strip(nodecontent(x)) for x in findall(".//name.id", c)]
+        names = [strip(nodecontent(x)) for x in findall(".//name", c)]
+        isempty(ids) && return nothing
+        return (String(ids[1]), isempty(names) ? "N/A" : String(names[1]))
+    end
+    return nothing
+end
+
 function construct_row(node::Node{<:PNode},node_tree)
+    # #157: every paragraph of a petition, its quoted text included, is the presenter's petition
+    pres = petition_presenter(node.node)
+    if !isnothing(pres)
+        for f in ("question_flag", "answer_flag", "interjection_flag", "speech_flag", "quote_flag", "motionnospeech_flag")
+            haskey(node.headers_dict, f) && (node.headers_dict[f] = 0)
+        end
+        node.headers_dict["petition_flag"] = 1
+        node.headers_dict["name.id"] = pres[1]
+        pres[2] != "N/A" && (node.headers_dict["name"] = pres[2])
+    end
     phase = get_phasetype(node)
     debateinfo =  find_section_title(node_tree,node.soup,DebateNode{phase})
     subdebateinfo =  find_section_title(node_tree,node.soup,SubdebateNode{phase})
