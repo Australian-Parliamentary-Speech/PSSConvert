@@ -29,6 +29,8 @@ done
 PY="$(command -v python3 || command -v python || true)"
 [ -n "$PY" ] || { echo "Python 3 is needed (python3 or python on the PATH)." >&2; exit 1; }
 command -v julia >/dev/null || { echo "Julia is needed: https://julialang.org/downloads/ (version 1.12)." >&2; exit 1; }
+# the python.org builds for macOS ship without root certificates: use the system's, unless one is set
+if [ -z "${SSL_CERT_FILE:-}" ] && [ -f /etc/ssl/cert.pem ]; then export SSL_CERT_FILE=/etc/ssl/cert.pem; fi
 # Julia and Python on Windows need Windows paths, not Git Bash's /c/...
 native() { if command -v cygpath >/dev/null; then cygpath -m "$1"; else printf '%s' "$1"; fi; }
 
