@@ -93,6 +93,14 @@ function split_at_lead_in(row_no, rows, header_to_num)
     equiv(prev, this, header_to_num) || return false
     # only a spoken paragraph: notices, lists and other non-speech rows are left as they were
     any(f -> haskey(header_to_num, f) && string(this[header_to_num[f]]) == "1", (:speech_flag, :question_flag, :answer_flag)) || return false
+    # not inside an incorporated document ("The statement read as follows —", #105): it stays one non-speech row
+    k = row_no - 1
+    while k >= 1 && k >= row_no - 60
+        r = get_row(rows, k)
+        occursin(INCORPORATED, strip(string(r[content_pos]))) && return false
+        (k == row_no - 1 || equiv(r, this, header_to_num)) || break
+        k -= 1
+    end
     return lead_in(strip(string(prev[content_pos]))) ||
            (row_no > 2 && lead_in(strip(string(get_row(rows, row_no - 2)[content_pos]))))
 end
