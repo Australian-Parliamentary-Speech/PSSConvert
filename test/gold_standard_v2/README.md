@@ -32,6 +32,13 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
 
 - **Tables** (Australian-Parliamentary-Speech/PSSConvert#100, decided by Pat 15/11/2026): each table is one non-speech row, `nonspeech_type = table`, with the id of the answer or speech it is part of; its text is written as in `docs/tables.md`. v2 was coded when tables were not output, so the answers ran straight across them. 41 table rows are inserted where the XML prints them (on Senate 07/11/2006, Senate and House 16/02/1999, House 10/03/1998 and House 12/02/2025), splitting the row around them; where the gold had the table's words inline, they become the table row. One table on House 16/02/1999 could not be placed and is left as it was. Each is in `../gold_standard_v2_notes/tables_100.csv`.
 
+- **Rows that broke the written conventions** (approved by Pat 15/11/2026):
+  - bill-title headings that carried the bill's link as `name.id` (`r4966`, `s1208`) have no id (§3: headings have no id): 24 rows on House 13/02/2013 and 24/02/2015, and Senate 30/07/2019;
+  - formal motions on House 10/02/2010 with no id take the moving member's id: 7 rows;
+  - printed notices of a bill ("Mr Kerin to present at the next sitting a Bill …") are non-speech `other` with the member's id, as printed notices of motion are (#142), and as the v3 gold has them: 13 rows.
+
+  The ids come from the members list, as the parser resolves the printed name. Each is in `../gold_standard_v2_notes/conventions_1511.csv`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
