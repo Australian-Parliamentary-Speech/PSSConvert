@@ -19,3 +19,6 @@ Manifest.toml
 test/test_inputs/Output/
 # Written by the gold standard test
 test/gold_outputs/
+
+# #183: the pinned environment of the runs is committed
+!replicate/Manifest.toml
