@@ -26,6 +26,24 @@ the row, so existing columns keep their positions.
   Enderby's Handbook id), Senator Staniforth Smith the House's Sydney Smith, Senator Kathy Martin the House's
   Vincent Martin, and Kent Hughes Billy Hughes after his death. Ids within 250 days of a term, and ids whose own
   member the printed name matches, are left as they are (Australian-Parliamentary-Speech/PSSConvert#193).
+- A speaker id whose member is not the one printed is replaced by the member the printed name stands for, where it
+  gives exactly one sitting member: "FRASER, Malcolm" carried Holt's `KHQ` (1956–58), and interjections by Hewson,
+  Carlton, Ruddock and others carried the Prime Minister's or a minister's id (1981–99)
+  (Australian-Parliamentary-Speech/PSSConvert#199).
+- `name.id` values that were neither a Handbook id nor a documented code are resolved from the printed name: a
+  sitting member, a collective voice (`OPPOSITION`, `GOVERNMENT`, `MEMBERS`), `GOVERNOR-GENERAL` or the Clerk's
+  `10001`; otherwise `UNKNOWN` on a spoken row and `N/A` on others. This covers `20000` (1901–77), `Unknown`, old
+  ParlInfo codes #88 could not map, and leftovers such as `#director`. ParlInfo's own codes for visiting heads of
+  state (`009C3` Bush, `G5F` Harper, `GYB` Obama) are kept (Australian-Parliamentary-Speech/PSSConvert#200).
+- A speaker heading cut between `name` and `content` ("Senator" + "GALLAGHER: I welcome …", "The PRESIDE" +
+  "NT: …") is joined back into `name` and taken out of `content`; a bare title with a member's id takes the member's
+  surname (Australian-Parliamentary-Speech/PSSConvert#201).
+- `party`, `electorate` and `page.no` are filled on far more rows. From 2011 a speaker read from the paragraph takes
+  them from the speech's talker; in every era a member's party and electorate are carried to their other rows that
+  day, and a row with no page takes the page its turn started on. Before, they were `N/A` on 85–99.5% of spoken rows
+  from 2012 (Australian-Parliamentary-Speech/PSSConvert#187).
+- `presiding_phid` is also set on the non-speech "Mr SPEAKER (…) took the chair" lines, which name the person in
+  the chair; there `name.id` is `N/A` (Australian-Parliamentary-Speech/PSSConvert#197).
 - `presiding_phid` holds only Handbook ids: values such as `UNKNOWN`, `1000`, `10000DEPUTY` and `10000Collins` are
   `N/A`. Handbook ids written in lower case (`e5z`) are upper case in `name.id` and `presiding_phid`
   (Australian-Parliamentary-Speech/PSSConvert#195).
