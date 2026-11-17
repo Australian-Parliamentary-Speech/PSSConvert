@@ -31,12 +31,61 @@ function members()
     if isnothing(MEMBERS[])
         d = Dict{Tuple{String,String},Vector{Tuple{String,String,String,String}}}()
         for r in CSV.File(joinpath(DATA_DIR, "members_by_surname.csv"); types=String)
-            push!(get!(d, (r.chamber, r.surname), Tuple{String,String,String,String}[]),
-                  (r.phid, r.start, r.var"end", lowercase(coalesce(r.display_name, ""))))
+            t = (r.phid, r.start, r.var"end", lowercase(coalesce(r.display_name, "")))
+            push!(get!(d, (r.chamber, r.surname), Tuple{String,String,String,String}[]), t)
+            # #193: "sullivan (formerly martin)" is found under either surname
+            m = match(r"^(.*?)\s*\(formerly\s+([^)]+)\)\s*$", r.surname)
+            if !isnothing(m)
+                for k in (m.captures[1], m.captures[2])
+                    push!(get!(d, (r.chamber, strip(k)), Tuple{String,String,String,String}[]), t)
+                end
+            end
         end
         MEMBERS[] = d
     end
     return MEMBERS[]
+end
+
+const MEMBER_NAME = Dict{String,String}()   # Handbook id → display name, lower case
+const SERVICE = Ref{Union{Nothing,Dict{Tuple{String,String},Vector{Tuple{String,String}}}}}(nothing)
+
+"(chamber, Handbook id) → the member's terms in that chamber, from data/members_by_surname.csv"
+function service()
+    if isnothing(SERVICE[])
+        d = Dict{Tuple{String,String},Vector{Tuple{String,String}}}()
+        for ((ch, _), v) in members(), (p, s, e, n) in v
+            push!(get!(d, (ch, p), Tuple{String,String}[]), (s, e))
+            MEMBER_NAME[p] = n
+        end
+        SERVICE[] = d
+    end
+    return SERVICE[]
+end
+
+"#195: is `id` a Handbook id of a member of either chamber? (upper case, as the Handbook writes them)"
+is_phid(id) = haskey(service(), ("house", id)) || haskey(service(), ("senate", id))
+
+"""#193: was member `id` serving in `house` within `slack` days of `date` (yyyy-mm-dd)?"""
+function serving(house, id, date, slack=0)
+    terms = get(service(), (house, id), nothing)
+    isnothing(terms) && return false
+    d = day_number(date)
+    isnothing(d) && return true
+    for (s, e) in terms
+        ds, de = day_number(s), day_number(e)
+        (isnothing(ds) || isnothing(de)) && continue
+        ds - slack <= d <= de + slack && return true
+    end
+    return false
+end
+
+"Days since 0000-03-01 for a yyyy-mm-dd date, or nothing (no Dates dependency)"
+function day_number(s)
+    m = match(r"^(\d{4})-(\d{2})-(\d{2})", string(s))
+    isnothing(m) && return nothing
+    y, mo, d = parse.(Int, m.captures)
+    mo <= 2 && (y -= 1; mo += 12)
+    return 365y + y ÷ 4 - y ÷ 100 + y ÷ 400 + (153 * (mo - 3) + 2) ÷ 5 + d
 end
 
 "The presiding office named in `name` (\"DEPUTY SPEAKER\", \"CHAIR\", ...), or nothing"

@@ -7,7 +7,12 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
     house = CURRENT_HOUSE[]
     date = something(match(r"\d{4}-\d{2}-\d{2}", basename(input_fn)), (match="N/A",)).match
     # #88: old ParlInfo codes become Handbook ids before anything reads the ids
-    foreach(r -> legacy_id!(r, header_to_num), rows)
+    foreach(r -> legacy_id!(upper_id!(r, header_to_num), header_to_num), rows)
+    for r in rows
+        join_cut_name!(r, header_to_num)          # #201: a heading cut between name and content
+        relink!(r, header_to_num, house, date)    # #193, #199: an id for another member than the one named
+        clean_id!(r, header_to_num, house, date)  # #200: ids that are not Handbook ids or documented codes
+    end
     heads = day_heads(rows, header_to_num, house, date)
     dids = day_ids(rows, header_to_num)
 
@@ -115,11 +120,41 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             end
         end
         built = day_rules!(built, header_to_num, date)
+        # #187: from 2011 ParlInfo gives party and electorate only in a speech's opening talker, so later paragraphs
+        # had N/A. A member's party and electorate are the same all day: take them from the member's other rows.
+        known = Dict{String,Tuple{Any,Any}}()
+        for (piece, _, _) in built
+            id = string(piece[header_to_num[Symbol("name.id")]])
+            (isna(id) || id in GENERIC_IDS) && continue
+            e, p = piece[header_to_num[:electorate]], piece[header_to_num[:party]]
+            k = get(known, id, ("N/A", "N/A"))
+            known[id] = (isna(string(k[1])) ? e : k[1], isna(string(k[2])) ? p : k[2])
+        end
+        for (piece, _, _) in built
+            k = get(known, string(piece[header_to_num[Symbol("name.id")]]), nothing)
+            isnothing(k) && continue
+            isna(string(piece[header_to_num[:electorate]])) && (piece[header_to_num[:electorate]] = k[1])
+            isna(string(piece[header_to_num[:party]])) && (piece[header_to_num[:party]] = k[2])
+        end
+        turn_page = "N/A"
         for (piece, pres, ptype) in built
+            # #196: petitions and motions moved without a speech are not spoken
+            if isflag(piece, header_to_num, :petition_flag) || isflag(piece, header_to_num, :motionnospeech_flag)
+                piece[header_to_num[:non_speech_flag]] = 1
+                ptype = isflag(piece, header_to_num, :petition_flag) ? "petition" : "motion"
+            end
             key = turn_key(piece,header_to_num)
             if !isnothing(key) && key != last_key
                 turn += 1
                 last_key = key
+                turn_page = "N/A"
+            end
+            # #187: a row with no page of its own is on the page its turn started on, as far as the source says
+            pg = string(piece[header_to_num[Symbol("page.no")]])
+            if !isna(pg)
+                turn_page = pg
+            elseif !isna(turn_page) && !isnothing(key)
+                piece[header_to_num[Symbol("page.no")]] = turn_page
             end
             write_row_to_io(io,[piece..., pres, ptype, turn])
         end

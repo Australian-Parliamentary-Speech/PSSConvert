@@ -107,6 +107,9 @@ function process_node(node::Node{<:PNode},node_tree)
             end
         end
     end
+    # #187: a speaker read from the paragraph (2011 on) still takes party, electorate and page from the speech's
+    # talker when the talker is the same member
+    talker_extras!(node, parent_node)
     if node.headers_dict["name"] == "N/A"
         #only the first node takes after the name in the parent node
         if is_first_node_type(node,parent_node,allowed_names,node_tree)
@@ -200,6 +203,21 @@ function is_name_inline(content)
         end
     end
     return false
+end
+
+"""#187: fills electorate, party and page.no from the parent's `<talker>` when the row's id is the talker's."""
+function talker_extras!(node, parent_node)
+    id = string(node.headers_dict["name.id"])
+    id == "N/A" && return
+    t = findfirst_in_subsoup(parent_node.node.path, "//talker", node.soup)
+    isnothing(t) && return
+    tid = findfirst_in_subsoup(t.path, "//name.id", node.soup)
+    (isnothing(tid) || uppercase(strip(tid.content)) != uppercase(strip(id))) && return
+    for (header, xpath) in (("electorate", "//electorate"), ("party", "//party"), ("page.no", "//page.no"))
+        node.headers_dict[header] == "N/A" || continue
+        v = findfirst_in_subsoup(t.path, xpath, node.soup)
+        !isnothing(v) && !isempty(strip(v.content)) && (node.headers_dict[header] = strip(v.content))
+    end
 end
 
 function p_interjecting_name(p_node::Node{<:PNode},parent_node)

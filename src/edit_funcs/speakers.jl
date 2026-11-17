@@ -181,3 +181,119 @@ function legacy_id!(row, h)
     row[h[nid]] = m[1]
     return row
 end
+
+"#195: a Handbook id written in lower case (\"e5z\") is the Handbook's upper-case id"
+function upper_id!(row, h)
+    nid = Symbol("name.id")
+    id = strip(string(row[h[nid]]))
+    u = uppercase(id)
+    u != id && (is_phid(u) || haskey(legacy_ids(), u)) && (row[h[nid]] = u)
+    return row
+end
+
+"#193, #199: the one member of `house` sitting on `date` that the printed name words `w` (lower case) give, or nothing"
+function name_member(house, date, w)
+    isempty(w) && return nothing
+    if length(w) >= 2
+        c = unique([q for (q, s, e, n) in get(members(), (house, w[end-1] * " " * w[end]), []) if s <= date <= e])
+        length(c) == 1 && return c[1]
+    end
+    return member_by_surname(house, date, join(w, " "))
+end
+
+has_word(n, t) = occursin(Regex("\\b" * replace(t, r"([\\^$.|?*+()\[\]{}-])" => s"\\\1") * "\\b"), n)
+
+"""#193: a row whose id is a member not sitting in this chamber on this date (Kilgariff's old ParlInfo code `8H7`
+is Enderby's Handbook id; Senator Staniforth Smith carries the House's Sydney Smith) takes the id of the one sitting
+member the printed name stands for. Left alone: a member within 250 days of a term (senators speak before their
+recorded 1 July start), an id whose own member the printed name matches (a senator at a joint sitting), and names
+that do not give exactly one sitting member.
+#199: so does a row whose id is a sitting member but whose printed surname is someone else's ("FRASER, Malcolm"
+carrying Holt's id; an interjection by Mr Hewson carrying the Prime Minister's)."""
+function relink!(row, h, house, date)
+    nid = Symbol("name.id")
+    id = string(row[h[nid]])
+    is_phid(id) || return row
+    name = string(row[h[:name]])
+    (isna(name) || !isnothing(presiding_office(name)) || !isnothing(collective_id(name))) && return row
+    w = [lowercase(replace(t, '’' => '\'')) for t in name_words(name)]
+    isempty(w) && return row
+    own = get(MEMBER_NAME, id, "")
+    if serving(house, id, date, 250)
+        # #199: the printed surname must be another member's, and that member must be sitting
+        surname = length(w) >= 2 && haskey(members(), (house, w[end-1] * " " * w[end])) ? w[end-1] * " " * w[end] : w[end]
+        has_word(own, surname) && return row
+        p = name_member(house, date, w)
+        (isnothing(p) || p == id) && return row
+        has_word(get(MEMBER_NAME, p, ""), surname) || return row
+        row[h[nid]] = p
+        return row
+    end
+    all(t -> occursin(t, own), w) && return row
+    p = name_member(house, date, w)
+    (isnothing(p) || p == id || !serving(house, p, date)) && return row
+    row[h[nid]] = p
+    return row
+end
+
+const KEEP_CODE = r"^[0-9A-Z]{3,6}$"
+const JUNK_CODES = ("EOF", "CHAMBER")
+
+"""#200: an id that is neither a Handbook id nor a documented code (`20000`, `Unknown`, an old ParlInfo code #88 could
+not map, `#director`, a code read from a cut heading) takes what the printed name gives: one sitting member, a
+collective voice, the Governor-General or the Clerk. Otherwise it is `N/A`, which the later steps fill from the name
+(#136) or make `UNKNOWN` on a spoken row (#95). ParlInfo's own codes for non-members (visiting heads of state:
+`009C3`, `G5F`, `GYB`) are kept when the name gives nothing."""
+function clean_id!(row, h, house, date)
+    nid = Symbol("name.id")
+    id = strip(string(row[h[nid]]))
+    (isna(id) || id in GENERIC_IDS || is_phid(id)) && return row
+    name = string(row[h[:name]])
+    cid = isna(name) ? nothing : collective_id(name)
+    if !isnothing(cid)
+        row[h[nid]] = cid
+    elseif occursin(r"(?i)governor[\s-]*general", name)
+        row[h[nid]] = "GOVERNOR-GENERAL"
+    elseif occursin(r"(?i)\bclerk\b", name) && !occursin(r"(?i)minister", name)
+        row[h[nid]] = "10001"
+    else
+        w = isna(name) || !isnothing(presiding_office(name)) ? String[] :
+            [lowercase(replace(t, '’' => '\'')) for t in name_words(name)]
+        p = name_member(house, date, w)
+        if !isnothing(p)
+            row[h[nid]] = p
+        elseif !(occursin(KEEP_CODE, id) && !occursin(r"^\d+$", id) && !(id in JUNK_CODES))
+            row[h[nid]] = "N/A"
+        end
+    end
+    return row
+end
+
+# #201: the heading cut between `name` and `content`: "Senator" + "GALLAGHER: I welcome …", "The PRESIDE" + "NT: Senator …"
+const CUT_NAME = r"^(?:Senator|Sen|Se|Mr|Ms|Mrs|Miss|Dr|Sir|Madam|The|The\s+[A-Z]{1,10})$"
+const HEAD_REST = r"^((?:Mc|Mac|O'|O’)?[A-Z][A-Za-z'’\-]*(?:\s+(?:Mc|Mac|O'|O’)?[A-Z][A-Za-z'’\-]+){0,3})\s*(\([^)]{1,80}\))?\s*(?:\(\d{1,2}[:.]\d{2}\))?\s*:\s*"
+const NAME_TITLE_WORDS = Set(["Senator", "Mr", "Ms", "Mrs", "Miss", "Dr", "Sir", "Madam", "The", "Hon"])
+
+"#201: joins a speaker heading cut between `name` and `content`. Returns true if it did."
+function join_cut_name!(row, h)
+    name = strip(string(row[h[:name]]))
+    (isna(name) || !occursin(CUT_NAME, name)) && return false
+    content = string(row[h[:content]])
+    m = match(HEAD_REST, content)
+    if isnothing(m)
+        # the rest of the heading is lost: a bare title with a member's id takes the member's Handbook surname
+        id = string(row[h[Symbol("name.id")]])
+        name in NAME_TITLE_WORDS && name != "The" && is_phid(id) || return false
+        own = get(MEMBER_NAME, id, "")
+        isempty(own) && return false
+        row[h[:name]] = name * " " * uppercase(strip(split(own, ",")[1]))
+        return true
+    end
+    last = split(name)[end]
+    sep = last in NAME_TITLE_WORDS ? " " : ""
+    joined = replace(name * sep * m.captures[1], r"^Sen?(?:ATOR|NATOR)\b"i => "Senator")
+    row[h[:name]] = joined * (isnothing(m.captures[2]) ? "" : " " * m.captures[2])
+    row[h[:content]] = content[m.offset + ncodeunits(m.match):end]
+    return true
+end
+
