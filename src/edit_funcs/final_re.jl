@@ -7,7 +7,9 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
     house = CURRENT_HOUSE[]
     date = something(match(r"\d{4}-\d{2}-\d{2}", basename(input_fn)), (match="N/A",)).match
     # #88: old ParlInfo codes become Handbook ids before anything reads the ids
-    foreach(r -> legacy_id!(r, header_to_num), rows)
+    foreach(r -> legacy_id!(upper_id!(r, header_to_num), header_to_num), rows)
+    # #193: an id for a member who was not sitting in this chamber that day
+    foreach(r -> relink!(r, header_to_num, house, date), rows)
     heads = day_heads(rows, header_to_num, house, date)
     dids = day_ids(rows, header_to_num)
 
@@ -116,6 +118,11 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
         end
         built = day_rules!(built, header_to_num, date)
         for (piece, pres, ptype) in built
+            # #196: petitions and motions moved without a speech are not spoken
+            if isflag(piece, header_to_num, :petition_flag) || isflag(piece, header_to_num, :motionnospeech_flag)
+                piece[header_to_num[:non_speech_flag]] = 1
+                ptype = isflag(piece, header_to_num, :petition_flag) ? "petition" : "motion"
+            end
             key = turn_key(piece,header_to_num)
             if !isnothing(key) && key != last_key
                 turn += 1

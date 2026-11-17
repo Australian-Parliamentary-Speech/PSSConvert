@@ -181,3 +181,39 @@ function legacy_id!(row, h)
     row[h[nid]] = m[1]
     return row
 end
+
+"#195: a Handbook id written in lower case (\"e5z\") is the Handbook's upper-case id"
+function upper_id!(row, h)
+    nid = Symbol("name.id")
+    id = strip(string(row[h[nid]]))
+    u = uppercase(id)
+    u != id && (is_phid(u) || haskey(legacy_ids(), u)) && (row[h[nid]] = u)
+    return row
+end
+
+"""#193: a row whose id is a member not sitting in this chamber on this date (Kilgariff's old ParlInfo code `8H7`
+is Enderby's Handbook id; Senator Staniforth Smith carries the House's Sydney Smith) takes the id of the one sitting
+member the printed name stands for. Left alone: a member within 250 days of a term (senators speak before their
+recorded 1 July start), an id whose own member the printed name matches (a senator at a joint sitting), and names
+that do not give exactly one sitting member."""
+function relink!(row, h, house, date)
+    nid = Symbol("name.id")
+    id = string(row[h[nid]])
+    is_phid(id) || return row
+    name = string(row[h[:name]])
+    (isna(name) || !isnothing(presiding_office(name)) || !isnothing(collective_id(name))) && return row
+    serving(house, id, date, 250) && return row
+    w = [lowercase(replace(t, '’' => '\'')) for t in name_words(name)]
+    isempty(w) && return row
+    own = get(MEMBER_NAME, id, "")
+    all(t -> occursin(t, own), w) && return row
+    p = nothing
+    if length(w) >= 2
+        c = unique([q for (q, s, e, n) in get(members(), (house, w[end-1] * " " * w[end]), []) if s <= date <= e])
+        length(c) == 1 && (p = c[1])
+    end
+    isnothing(p) && (p = member_by_surname(house, date, join(w, " ")))
+    (isnothing(p) || p == id || !serving(house, p, date)) && return row
+    row[h[nid]] = p
+    return row
+end

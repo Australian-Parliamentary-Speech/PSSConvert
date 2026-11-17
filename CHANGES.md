@@ -10,13 +10,30 @@ the row, so existing columns keep their positions.
 | Column | Values | Issue |
 |---|---|---|
 | `presiding_phid` | The presiding officer's own Handbook id where it is known reliably, otherwise `N/A`. `name.id` stays `10000` for every presiding officer. | Australian-Parliamentary-Speech/PSSConvert#90 |
-| `nonspeech_type` | On non-speech rows: `written_question`, `written_answer`, `incorporated`, `procedural`, `division`, `heading`, `table` or `other`. `N/A` on all other rows. | Australian-Parliamentary-Speech/PSSConvert#96, Australian-Parliamentary-Speech/PSSConvert#100 |
+| `nonspeech_type` | On non-speech rows: `written_question`, `written_answer`, `incorporated`, `procedural`, `division`, `heading`, `table`, `petition`, `motion` or `other`. `N/A` on all other rows. | Australian-Parliamentary-Speech/PSSConvert#96, Australian-Parliamentary-Speech/PSSConvert#100, Australian-Parliamentary-Speech/PSSConvert#196 |
 | `turn_no` | Counts turns: increases by one when the speaker changes. Non-speech rows keep the number of the turn before them. `0` before the first speaker. | Australian-Parliamentary-Speech/PSSConvert#97 |
 
 ### Changed meanings and flags
-- `speaker_no` is the row's order number in the source: it increases on every row, stage directions
-  included. This was already so; it is now documented, and `turn_no` gives the count of turns
-  (Australian-Parliamentary-Speech/PSSConvert#97).
+- Petition rows (`petition_flag = 1`) and motions moved without a speech (`motionnospeech_flag = 1`) are now
+  `non_speech_flag = 1`, with `nonspeech_type` `petition` or `motion`; both keep their flag and the member's id. Before,
+  they were `non_speech_flag = 0`, so filtering on `non_speech_flag` counted 177,582 of them as speech
+  (Australian-Parliamentary-Speech/PSSConvert#196).
+- From 2011 petitions carry the id of the Petitions Committee chair who presented them ("On behalf of the Standing
+  Committee on Petitions … I present the following petitions"). They had `N/A` (85,238 rows)
+  (Australian-Parliamentary-Speech/PSSConvert#194).
+- A speaker id for a member who was not sitting in that chamber on that date is replaced by the id of the one sitting
+  member the printed name stands for: Senator Kilgariff carried Enderby's `8H7` (ParlInfo's old code for him is
+  Enderby's Handbook id), Senator Staniforth Smith the House's Sydney Smith, Senator Kathy Martin the House's
+  Vincent Martin, and Kent Hughes Billy Hughes after his death. Ids within 250 days of a term, and ids whose own
+  member the printed name matches, are left as they are (Australian-Parliamentary-Speech/PSSConvert#193).
+- `presiding_phid` holds only Handbook ids: values such as `UNKNOWN`, `1000`, `10000DEPUTY` and `10000Collins` are
+  `N/A`. Handbook ids written in lower case (`e5z`) are upper case in `name.id` and `presiding_phid`
+  (Australian-Parliamentary-Speech/PSSConvert#195).
+- `speaker_no` is the order number of the source row a row comes from. It never goes down, and it goes up on
+  every source row, stage directions included, but rows split from one source paragraph (stage directions, motions,
+  tables and documents taken out of a speech, a second speaker named inside it) share their source row's number, so
+  it repeats on about 18% of rows. Use `turn_no` to count turns, not `speaker_no`
+  (Australian-Parliamentary-Speech/PSSConvert#97, Australian-Parliamentary-Speech/PSSConvert#197).
 - The Speaker, President and Chair (rows with `name.id = 10000`) are always `speech_flag = 1`, never
   `interjection_flag`, `question_flag` or `answer_flag`. This reverses the question-time rule of
   Australian-Parliamentary-Speech/PSSConvert#55 (Australian-Parliamentary-Speech/PSSConvert#93).

@@ -166,8 +166,9 @@ function presiding_id!(row, h, presiding)
     # a passage the presiding officer quotes or moves is theirs too, with 10000 (#148)
     spoken = any(f -> isflag(row, h, f), SPOKEN_FLAGS) || isflag(row, h, :quote_flag)
     (spoken && !isnothing(presiding_office(name)) && !occursin(NOT_PRESIDING, name) && !occursin(VOCATIVE, name)) || return presiding
-    nid = string(row[h[Symbol("name.id")]])
-    if !(nid == "10000" || isna(nid)) && presiding == "N/A"
+    nid = uppercase(string(row[h[Symbol("name.id")]]))
+    # #195: only a Handbook id moves; "UNKNOWN", "1000", "10000Collins" and the like are not the person
+    if is_phid(nid) && presiding == "N/A"
         presiding = nid
     end
     row[h[Symbol("name.id")]] = "10000"
@@ -730,7 +731,7 @@ function clerk_petitions!(rows, h, date)
     nid = Symbol("name.id")
     house = CURRENT_HOUSE[]
     dids = day_ids([x[1] for x in rows], h)
-    lodged, ltopic, pending = false, nothing, Int[]
+    lodged, ltopic, pending, presenter = false, nothing, Int[], nothing
     function settle!(id, name)
         for k in pending
             rows[k][1][h[nid]] = id
@@ -743,10 +744,16 @@ function clerk_petitions!(rows, h, date)
         t = string(r[h[:debateinfo]])
         if t != ltopic
             settle!("10001", "The Clerk")
-            lodged, ltopic = false, t
+            lodged, ltopic, presenter = false, t, nothing
         end
         name = string(r[h[:name]])
         content = string(r[h[:content]])
+        # #194: from 2011 the Petitions Committee chair presents the petitions ("On behalf of the Standing Committee
+        # on Petitions … I present the following petitions"), which follow with no talker of their own
+        if spoken_row(r, h) && occursin(r"(?i)petition", t) && occursin(r"(?i)\bpresent", content) &&
+           is_phid(string(r[h[nid]]))
+            presenter = (string(r[h[nid]]), name)
+        end
         if occursin(CLERK, name) && !occursin(r"(?i)\bdeputy\s+president|minister", name) &&
            (spoken_row(r, h) || isflag(r, h, :petition_flag))
             r[h[nid]] = "10001"
@@ -760,6 +767,9 @@ function clerk_petitions!(rows, h, date)
                 id = resolve_id(m.captures[1], house, date, dids)
                 isnothing(id) ? settle!("10001", "The Clerk") : settle!(id, String(m.captures[1]))
             end
+        elseif isflag(r, h, :petition_flag) && (isna(r[h[nid]]) || string(r[h[nid]]) == "UNKNOWN") && !isnothing(presenter)
+            r[h[nid]] = presenter[1]
+            isna(r[h[:name]]) && (r[h[:name]] = presenter[2])
         end
     end
     settle!("10001", "The Clerk")
