@@ -1,0 +1,807 @@
+chamber,office,phid,surname,start,end
+house,Acting Speaker,CI4,millar,1978-09-21,1978-10-10
+house,Acting Speaker,KIH,lucock,1964-08-11,1964-09-17
+house,Acting Speaker,KIH,lucock,1976-09-07,1976-09-16
+house,Acting Speaker,KIH,lucock,1977-10-05,1977-10-18
+house,Chair of Committees,4I4,mcleay,1986-02-11,1989-08-29
+house,Chairman of Committees,5J4,scholes,1973-02-28,1975-02-27
+house,Chairman of Committees,AG4,edwards,1989-08-29,1992-11-03
+house,Chairman of Committees,CI4,millar,1978-02-21,1983-02-04
+house,Chairman of Committees,DRW,jenkins,1975-08-19,1975-11-11
+house,Chairman of Committees,HF4,child,1984-02-28,1986-02-11
+house,Chairman of Committees,JLR,adermann,1950-02-22,1958-10-14
+house,Chairman of Committees,JNV,bamford,1923-02-28,1925-10-03
+house,Chairman of Committees,JOG,bayley,1926-01-14,1929-09-16
+house,Chairman of Committees,JOS,bell,1932-02-17,1934-08-07
+house,Chairman of Committees,JP8,berinson,1975-02-27,1975-07-14
+house,Chairman of Committees,JRJ,bowden,1959-02-17,1961-03-07
+house,Chairman of Committees,JUQ,clark,1946-11-07,1949-10-31
+house,Chairman of Committees,JWG,fowler,1913-07-09,1914-07-30
+house,Chairman of Committees,JWY,chanter,1901-06-05,1903-10-22
+house,Chairman of Committees,JWY,chanter,1914-10-09,1917-03-26
+house,Chairman of Committees,JWY,chanter,1917-06-14,1919-11-03
+house,Chairman of Committees,JWY,chanter,1920-02-27,1922-11-06
+house,Chairman of Committees,K9M,johnson,1983-04-21,1983-12-19
+house,Chairman of Committees,KIH,lucock,1961-03-08,1972-11-02
+house,Chairman of Committees,KIH,lucock,1976-02-17,1977-11-10
+house,Chairman of Committees,KNJ,mauger,1906-06-15,1906-06-15
+house,Chairman of Committees,KQP,mcdonald,1906-06-20,1910-02-19
+house,Chairman of Committees,KRD,mcgrath,1929-11-20,1931-11-27
+house,Chairman of Committees,KYD,poynton,1910-07-01,1913-04-23
+house,Chairman of Committees,KYI,prowse,1934-10-23,1943-06-21
+house,Chairman of Committees,KZ9,riordan,1943-06-22,1946-08-16
+house,Chairman of Committees,L0K,salmon,1904-03-17,1905-12-21
+house,Deputy Chairman of Committees,0I4,mackellar,1973-03-01,1974-04-11
+house,Deputy Chairman of Committees,0I4,mackellar,1990-05-08,1993-02-08
+house,Deputy Chairman of Committees,0J4,ruddock,1985-09-19,1989-08-29
+house,Deputy Chairman of Committees,3E4,sullivan (formerly martin),1990-05-08,1993-02-08
+house,Deputy Chairman of Committees,3G4,dobie,1970-03-04,1971-08-20
+house,Deputy Chairman of Committees,3G4,dobie,1979-09-25,1983-02-04
+house,Deputy Chairman of Committees,3G4,dobie,1987-09-15,1994-02-21
+house,Deputy Chairman of Committees,5G4,dubois,1990-05-08,1993-02-08
+house,Deputy Chairman of Committees,5J4,scholes,1970-03-04,1972-11-02
+house,Deputy Chairman of Committees,5J4,scholes,1990-05-08,1993-02-08
+house,Deputy Chairman of Committees,8J4,scott,1990-05-08,1994-02-21
+house,Deputy Chairman of Committees,9U4,newell,1993-05-10,1994-02-21
+house,Deputy Chairman of Committees,AE4,nehl,1990-05-08,1994-02-21
+house,Deputy Chairman of Committees,AG4,edwards,1987-09-15,1989-08-29
+house,Deputy Chairman of Committees,AI4,mildren,1983-04-21,1990-02-19
+house,Deputy Chairman of Committees,CI4,millar,1983-04-21,1990-02-19
+house,Deputy Chairman of Committees,DH4,hollis,1989-08-29,1994-02-21
+house,Deputy Chairman of Committees,DRW,jenkins,1973-03-01,1975-08-19
+house,Deputy Chairman of Committees,DRW,jenkins,1976-02-26,1983-02-04
+house,Deputy Chairman of Committees,FG4,fitzgibbon,1993-05-04,1994-02-21
+house,Deputy Chairman of Committees,GT4,truss,1991-09-12,1994-02-21
+house,Deputy Chairman of Committees,HE4,andrew,1985-02-26,1985-09-09
+house,Deputy Chairman of Committees,HE4,andrew,1989-05-23,1990-02-19
+house,Deputy Chairman of Committees,HE4,andrew,1993-05-04,1994-02-21
+house,Deputy Chairman of Committees,HF4,child,1983-04-21,1984-02-28
+house,Deputy Chairman of Committees,HH4,jenkins,1990-05-08,1993-02-08
+house,Deputy Chairman of Committees,HJ4,snow,1993-05-04,1994-02-21
+house,Deputy Chairman of Committees,JM9,armitage,1970-03-04,1983-02-04
+house,Deputy Chairman of Committees,JP8,berinson,1973-03-01,1975-02-27
+house,Deputy Chairman of Committees,JQB,bonnett,1970-03-04,1972-11-02
+house,Deputy Chairman of Committees,JQB,bonnett,1976-02-18,1977-11-10
+house,Deputy Chairman of Committees,JR9,bosman,1967-02-28,1969-09-29
+house,Deputy Chairman of Committees,JRJ,bowden,1952-08-06,1952-10-28
+house,Deputy Chairman of Committees,JSG,brimblecombe,1966-05-05,1966-10-31
+house,Deputy Chairman of Committees,JTF,burke,1948-09-01,1948-11-30
+house,Deputy Chairman of Committees,JUQ,clark,1966-05-05,1969-09-29
+house,Deputy Chairman of Committees,JVD,mountford,1983-04-21,1990-02-19
+house,Deputy Chairman of Committees,JWI,fox,1967-02-28,1969-09-29
+house,Deputy Chairman of Committees,K5L,cope,1967-02-28,1972-11-02
+house,Deputy Chairman of Committees,K5O,corbett,1970-03-04,1972-11-02
+house,Deputy Chairman of Committees,K6T,costa,1967-02-28,1969-09-29
+house,Deputy Chairman of Committees,K9J,johnson,1975-03-05,1975-11-11
+house,Deputy Chairman of Committees,KB8,giles,1974-07-10,1983-02-04
+house,Deputy Chairman of Committees,KCT,drummond,1976-02-18,1987-06-05
+house,Deputy Chairman of Committees,KCU,drury,1966-05-05,1975-11-11
+house,Deputy Chairman of Committees,KDA,duthie,1973-03-01,1974-04-11
+house,Deputy Chairman of Committees,KDS,failes,1966-05-05,1969-09-29
+house,Deputy Chairman of Committees,KDV,jones,1966-05-05,1966-10-31
+house,Deputy Chairman of Committees,KDV,jones,1980-11-26,1983-02-04
+house,Deputy Chairman of Committees,KEI,keogh,1984-02-29,1987-06-05
+house,Deputy Chairman of Committees,KEP,falkinder,1966-05-05,1966-10-31
+house,Deputy Chairman of Committees,KG4,langmore,1993-05-04,1993-05-10
+house,Deputy Chairman of Committees,KGA,hallett,1967-02-28,1972-11-02
+house,Deputy Chairman of Committees,KGP,haworth,1966-05-05,1969-09-29
+house,Deputy Chairman of Committees,KID,luchetti,1970-03-04,1975-11-11
+house,Deputy Chairman of Committees,KIH,lucock,1973-03-01,1975-11-11
+house,Deputy Chairman of Committees,KJA,innes,1975-03-05,1975-11-11
+house,Deputy Chairman of Committees,KJU,jarman,1970-03-04,1974-04-11
+house,Deputy Chairman of Committees,KJU,jarman,1976-02-18,1983-02-04
+house,Deputy Chairman of Committees,KKU,mackinnon,1966-05-05,1966-10-31
+house,Deputy Chairman of Committees,KN9,martin,1973-03-01,1980-09-19
+house,Deputy Chairman of Committees,KXZ,peters,1966-05-05,1966-10-31
+house,Deputy Chairman of Committees,L0G,ryan,1950-10-11,1950-11-28
+house,Deputy Chairman of Committees,UD4,darling,1983-04-21,1990-02-19
+house,Deputy Chairman of Committees,UE4,blanchard,1986-02-12,1990-02-19
+house,Deputy Chairman of Committees,VF4,cowan,1985-02-27,1991-09-12
+house,Deputy Chairman of Committees,VT4,reid,1993-05-04,1994-02-21
+house,Deputy Chairman of Committees,YI4,robinson,1976-02-18,1983-02-04
+house,Deputy Chairman of Committees,ZI4,rocher,1983-04-21,1990-02-19
+house,Deputy Speaker,0V5,slipper,2010-09-28,2011-11-24
+house,Deputy Speaker,218019,hogan,2018-03-26,2020-02-10
+house,Deputy Speaker,248181,claydon,2022-07-26,
+house,Deputy Speaker,265991,o'brien,2020-02-10,2022-04-11
+house,Deputy Speaker,4K6,causley,2002-02-12,2007-10-17
+house,Deputy Speaker,83S,burke,2008-02-12,2010-07-19
+house,Deputy Speaker,83S,burke,2011-11-24,2012-10-09
+house,Deputy Speaker,AE4,nehl,1996-04-30,2001-10-08
+house,Deputy Speaker,HH4,jenkins,1994-02-21,1996-01-29
+house,Deputy Speaker,HWN,coulton,2016-08-30,2018-03-05
+house,Deputy Speaker,YT4,scott,2012-10-09,2016-05-09
+house,Deputy Speaker and Chairman of Committees,AG4,edwards,1992-11-03,1993-02-08
+house,Deputy Speaker and Chairman of Committees,HH4,jenkins,1993-05-04,1994-02-21
+house,Member of the Speaker's Panel,009CW,corcoran,2002-02-19,2004-08-31
+house,Member of the Speaker's Panel,009CW,corcoran,2007-02-06,2007-10-17
+house,Member of the Speaker's Panel,009LP,windsor,2012-02-16,2013-08-05
+house,Member of the Speaker's Panel,00AMP,grierson,2012-02-27,2013-08-05
+house,Member of the Speaker's Panel,00AMT,vamvakinou,2010-10-20,2013-08-05
+house,Member of the Speaker's Panel,00AMT,vamvakinou,2016-09-01,2025-03-28
+house,Member of the Speaker's Panel,00AN1,cobb,2015-10-12,2016-05-09
+house,Member of the Speaker's Panel,0V5,slipper,2008-02-18,2010-07-19
+house,Member of the Speaker's Panel,11788,aldred,2025-08-27,
+house,Member of the Speaker's Panel,124514,mckenzie,2024-05-14,
+house,Member of the Speaker's Panel,125865,mcveigh,2018-09-10,2020-09-18
+house,Member of the Speaker's Panel,140590,o'neil,2015-03-26,2016-05-09
+house,Member of the Speaker's Panel,140651,o'neill,2012-03-13,2013-08-05
+house,Member of the Speaker's Panel,144732,payne,2022-12-01,
+house,Member of the Speaker's Panel,176304,stevens,2022-08-02,2024-03-21
+house,Member of the Speaker's Panel,198084,wilson,2019-09-09,2021-02-15
+house,Member of the Speaker's Panel,198084,wilson,2021-07-30,2022-04-11
+house,Member of the Speaker's Panel,201906,young,2022-08-02,2025-07-22
+house,Member of the Speaker's Panel,203092,zimmerman,2019-07-02,2022-04-11
+house,Member of the Speaker's Panel,207800,whiteley,2013-11-14,2015-09-28
+house,Member of the Speaker's Panel,208884,porter,2013-11-18,2015-02-09
+house,Member of the Speaker's Panel,217266,prentice,2015-02-12,2016-02-22
+house,Member of the Speaker's Panel,218019,hogan,2016-09-01,2018-02-05
+house,Member of the Speaker's Panel,220370,griggs,2013-11-14,2016-05-09
+house,Member of the Speaker's Panel,230531,buchholz,2016-09-12,2018-08-31
+house,Member of the Speaker's Panel,230531,buchholz,2022-07-28,2025-03-28
+house,Member of the Speaker's Panel,230531,buchholz,2026-03-05,
+house,Member of the Speaker's Panel,230886,andrews,2014-03-04,2015-02-09
+house,Member of the Speaker's Panel,230886,andrews,2023-09-12,2025-03-28
+house,Member of the Speaker's Panel,241590,wicks,2015-02-12,2022-04-11
+house,Member of the Speaker's Panel,242515,sukkar,2015-10-12,2016-05-09
+house,Member of the Speaker's Panel,247130,laundy,2018-09-10,2019-04-11
+house,Member of the Speaker's Panel,247742,howarth,2017-08-08,2019-04-11
+house,Member of the Speaker's Panel,248181,claydon,2015-03-26,2016-05-09
+house,Member of the Speaker's Panel,248181,claydon,2016-10-11,2022-04-11
+house,Member of the Speaker's Panel,249127,conroy,2015-03-26,2016-05-09
+house,Member of the Speaker's Panel,249308,price,2015-10-12,2016-05-09
+house,Member of the Speaker's Panel,249308,price,2017-08-08,2017-12-20
+house,Member of the Speaker's Panel,249710,chesters,2022-08-01,
+house,Member of the Speaker's Panel,249764,landry,2015-02-12,2016-05-09
+house,Member of the Speaker's Panel,260805,hastie,2016-09-01,2019-07-22
+house,Member of the Speaker's Panel,261393,gee,2018-03-26,2019-01-29
+house,Member of the Speaker's Panel,264170,swanson,2025-07-23,
+house,Member of the Speaker's Panel,265967,wallace,2019-09-09,2021-11-23
+house,Member of the Speaker's Panel,265979,freelander,2020-08-24,
+house,Member of the Speaker's Panel,265980,sharkie,2022-07-27,
+house,Member of the Speaker's Panel,282237,archer,2023-03-29,2025-03-28
+house,Member of the Speaker's Panel,282335,haines,2025-07-23,
+house,Member of the Speaker's Panel,290544,ananda-rajah,2022-10-26,2023-09-12
+house,Member of the Speaker's Panel,291387,hamilton,2025-08-27,2025-11-04
+house,Member of the Speaker's Panel,291406,small,2025-08-27,2026-03-05
+house,Member of the Speaker's Panel,295588,garland,2025-07-23,
+house,Member of the Speaker's Panel,298800,mascarenhas,2025-07-23,
+house,Member of the Speaker's Panel,299150,lawrence,2025-07-23,
+house,Member of the Speaker's Panel,299498,boyce,2025-07-23,
+house,Member of the Speaker's Panel,299964,fernando,2025-08-27,
+house,Member of the Speaker's Panel,3E4,sullivan (formerly martin),1996-05-01,1997-10-21
+house,Member of the Speaker's Panel,3G4,dobie,1994-02-21,1996-01-29
+house,Member of the Speaker's Panel,4K6,causley,1998-11-12,2001-10-08
+house,Member of the Speaker's Panel,4V5,moylan,2008-02-14,2010-07-19
+house,Member of the Speaker's Panel,53517,dick,2021-08-04,2022-04-11
+house,Member of the Speaker's Panel,5I4,mcmullan,2005-02-08,2007-02-06
+house,Member of the Speaker's Panel,5M6,dondas,1997-10-21,1998-08-31
+house,Member of the Speaker's Panel,72184,gillespie,2019-07-02,2021-07-08
+house,Member of the Speaker's Panel,74046,goodenough,2013-11-18,2022-04-11
+house,Member of the Speaker's Panel,7T4,crosio,1996-05-07,2001-10-08
+house,Member of the Speaker's Panel,83A,livermore,2010-10-20,2013-08-05
+house,Member of the Speaker's Panel,83B,may,2010-02-23,2010-07-19
+house,Member of the Speaker's Panel,83D,murphy,2010-10-20,2013-08-05
+house,Member of the Speaker's Panel,83E,ripoll,2012-02-27,2012-03-13
+house,Member of the Speaker's Panel,83N,hall,2013-05-27,2013-08-05
+house,Member of the Speaker's Panel,83Q,schultz,2008-02-18,2010-07-19
+house,Member of the Speaker's Panel,83S,burke,2010-09-30,2011-11-24
+house,Member of the Speaker's Panel,83S,burke,2015-03-26,2016-05-09
+house,Member of the Speaker's Panel,848,secker,2007-02-06,2010-03-09
+house,Member of the Speaker's Panel,849,sidebottom,2008-02-14,2012-02-07
+house,Member of the Speaker's Panel,84F,washer,2008-02-18,2010-07-19
+house,Member of the Speaker's Panel,84G,wilkie,2002-02-19,2007-10-17
+house,Member of the Speaker's Panel,84T,haase,2006-06-01,2007-10-17
+house,Member of the Speaker's Panel,8H4,hawker,1998-11-23,2004-08-31
+house,Member of the Speaker's Panel,8J4,scott,1994-02-21,1996-01-29
+house,Member of the Speaker's Panel,96430,jones,2014-03-04,2015-09-28
+house,Member of the Speaker's Panel,99931,kelly,2013-11-14,2017-09-13
+house,Member of the Speaker's Panel,9K6,gambaro,2002-02-19,2004-08-12
+house,Member of the Speaker's Panel,9U4,newell,1994-02-21,1996-01-29
+house,Member of the Speaker's Panel,AE4,nehl,1994-02-21,1996-01-29
+house,Member of the Speaker's Panel,AK6,gash,1998-11-23,2001-10-08
+house,Member of the Speaker's Panel,AV5,quick,1996-05-07,2001-10-08
+house,Member of the Speaker's Panel,AV5,quick,2004-11-17,2007-10-17
+house,Member of the Speaker's Panel,BU8,leigh,2012-02-07,2013-05-14
+house,Member of the Speaker's Panel,BV5,adams,1996-05-07,2013-08-05
+house,Member of the Speaker's Panel,C2T,wilkie,2022-07-27,
+house,Member of the Speaker's Panel,DH4,hollis,1994-02-21,1996-01-29
+house,Member of the Speaker's Panel,DZP,bird,2008-02-18,2012-03-13
+house,Member of the Speaker's Panel,DZP,bird,2016-10-11,2022-04-11
+house,Member of the Speaker's Panel,DZY,georganas,2008-02-18,2012-10-10
+house,Member of the Speaker's Panel,DZY,georganas,2016-09-01,
+house,Member of the Speaker's Panel,E09,owens,2012-05-24,2013-08-05
+house,Member of the Speaker's Panel,E09,owens,2020-08-24,2022-04-11
+house,Member of the Speaker's Panel,E0D,vasta,2013-11-14,2025-03-28
+house,Member of the Speaker's Panel,ET4,bevis,2008-02-18,2010-07-19
+house,Member of the Speaker's Panel,F2S,scrymgour,NA,
+house,Member of the Speaker's Panel,FG4,fitzgibbon,1994-02-21,1996-01-29
+house,Member of the Speaker's Panel,FK6,kelly,1997-10-20,2001-10-08
+house,Member of the Speaker's Panel,G86,falinski,2020-08-24,2022-04-11
+house,Member of the Speaker's Panel,GT4,truss,1994-02-21,1995-01-31
+house,Member of the Speaker's Panel,GT4,truss,1996-05-01,1997-10-20
+house,Member of the Speaker's Panel,HE4,andrew,1994-02-21,1997-08-27
+house,Member of the Speaker's Panel,HJ4,snow,1994-02-21,1996-01-29
+house,Member of the Speaker's Panel,HK5,andrews,1997-08-27,2001-10-08
+house,Member of the Speaker's Panel,HK5,andrews,2008-02-18,2010-02-23
+house,Member of the Speaker's Panel,HK5,andrews,2018-02-05,2022-04-11
+house,Member of the Speaker's Panel,HK6,lindsay,2002-02-19,2007-02-06
+house,Member of the Speaker's Panel,HVN,d'ath,2010-10-20,2013-02-13
+house,Member of the Speaker's Panel,HVY,saffin,2008-02-18,2010-07-19
+house,Member of the Speaker's Panel,HVY,saffin,2013-05-27,2013-08-05
+house,Member of the Speaker's Panel,HW7,cheeseman,2012-11-29,2013-08-05
+house,Member of the Speaker's Panel,HW8,symon,2012-02-07,2013-08-05
+house,Member of the Speaker's Panel,HWA,rishworth,2012-03-13,2013-05-14
+house,Member of the Speaker's Panel,HWN,coulton,2021-07-30,2022-04-11
+house,Member of the Speaker's Panel,HWO,hawke,2014-03-04,2015-09-21
+house,Member of the Speaker's Panel,HWS,ramsey,2010-03-09,2010-07-19
+house,Member of the Speaker's Panel,HYM,irons,2015-02-12,2018-08-31
+house,Member of the Speaker's Panel,HYM,irons,2021-02-15,2022-04-11
+house,Member of the Speaker's Panel,IPZ,chester,2021-07-30,2022-04-11
+house,Member of the Speaker's Panel,IYS,oakeshott,2012-02-16,2013-08-05
+house,Member of the Speaker's Panel,JK6,mcclelland,2013-05-27,2013-08-05
+house,Member of the Speaker's Panel,LL6,baldwin,2004-11-17,2006-02-07
+house,Member of the Speaker's Panel,LN6,hatton,2004-11-17,2007-10-17
+house,Member of the Speaker's Panel,M38,lyons,2012-02-27,2013-08-05
+house,Member of the Speaker's Panel,M3E,mitchell,2012-02-27,2013-08-05
+house,Member of the Speaker's Panel,M3K,crook,2012-02-16,2012-05-21
+house,Member of the Speaker's Panel,MK6,mossfield,1996-05-07,2004-08-31
+house,Member of the Speaker's Panel,MT4,broadbent,2013-11-18,2017-05-30
+house,Member of the Speaker's Panel,NV5,forrest,1997-10-20,1998-08-31
+house,Member of the Speaker's Panel,PE4,beazley,2004-11-17,2005-02-08
+house,Member of the Speaker's Panel,PK6,randall,2014-03-04,2015-07-21
+house,Member of the Speaker's Panel,QI4,price,2002-02-19,2004-08-31
+house,Member of the Speaker's Panel,RH4,kerr,2006-06-01,2007-10-17
+house,Member of the Speaker's Panel,SE4,bishop,2004-11-17,2007-10-17
+house,Member of the Speaker's Panel,SU5,vaile,1995-01-31,1997-10-20
+house,Member of the Speaker's Panel,TK6,southcott,2015-08-19,2016-05-09
+house,Member of the Speaker's Panel,UK6,thomson,2008-02-18,2013-02-13
+house,Member of the Speaker's Panel,VK6,vale,2008-02-18,2010-07-19
+house,Member of the Speaker's Panel,VT4,reid,1994-02-21,1998-08-31
+house,Member of the Speaker's Panel,YT4,scott,2002-02-19,2007-10-17
+house,Member of the Speaker's Panel,ZJ6,barresi,2002-02-19,2004-08-31
+house,Member of the Speaker's Panel,ZJ6,barresi,2006-02-07,2007-10-17
+house,Member of the Speaker's Panel,ZN4,henderson,2015-02-12,2016-05-09
+house,Member of the Speaker's Panel,ZT4,somlyay,2004-08-12,2007-10-17
+house,Second Deputy Speaker,201906,young,2025-07-22,
+house,Second Deputy Speaker,74046,goodenough,2022-07-26,2025-03-28
+house,Second Deputy Speaker,DZY,georganas,2012-10-10,2013-08-05
+house,Second Deputy Speaker,HH4,jenkins,1996-04-30,2007-10-17
+house,Second Deputy Speaker,M3E,mitchell,2013-11-12,2022-04-11
+house,Second Deputy Speaker,YT4,scott,2008-02-12,2012-10-09
+house,Second Deputy Speaker,ZI4,rocher,1994-03-03,1996-01-29
+house,Speaker of the House of Representatives,00APG,smith,2015-08-10,2016-05-09
+house,Speaker of the House of Representatives,00APG,smith,2016-08-30,2019-04-11
+house,Speaker of the House of Representatives,00APG,smith,2019-07-02,2021-11-23
+house,Speaker of the House of Representatives,0V5,slipper,2011-11-24,2012-10-09
+house,Speaker of the House of Representatives,265967,wallace,2021-11-23,2022-04-11
+house,Speaker of the House of Representatives,3H4,halverson,1996-04-30,1998-03-03
+house,Speaker of the House of Representatives,4I4,mcleay,1989-08-29,1989-12-22
+house,Speaker of the House of Representatives,4I4,mcleay,1990-05-08,1993-02-08
+house,Speaker of the House of Representatives,53517,dick,2022-07-26,
+house,Speaker of the House of Representatives,5E4,sinclair,1998-03-04,1998-08-31
+house,Speaker of the House of Representatives,5J4,scholes,1975-02-27,1975-11-11
+house,Speaker of the House of Representatives,83S,burke,2012-10-09,2013-08-05
+house,Speaker of the House of Representatives,8H4,hawker,2004-11-16,2007-10-17
+house,Speaker of the House of Representatives,8I4,martin,1993-05-04,1996-01-29
+house,Speaker of the House of Representatives,DQF,snedden,1976-02-17,1977-11-10
+house,Speaker of the House of Representatives,DQF,snedden,1978-02-21,1980-09-19
+house,Speaker of the House of Representatives,DQF,snedden,1980-11-25,1983-02-04
+house,Speaker of the House of Representatives,DRW,jenkins,1983-04-21,1984-10-26
+house,Speaker of the House of Representatives,DRW,jenkins,1985-02-21,1985-12-20
+house,Speaker of the House of Representatives,HE4,andrew,1998-11-10,2001-10-08
+house,Speaker of the House of Representatives,HE4,andrew,2002-02-12,2004-08-31
+house,Speaker of the House of Representatives,HF4,child,1986-02-11,1987-06-05
+house,Speaker of the House of Representatives,HF4,child,1987-09-14,1989-08-28
+house,Speaker of the House of Representatives,HH4,jenkins,2008-02-12,2010-07-19
+house,Speaker of the House of Representatives,HH4,jenkins,2010-09-28,2011-11-24
+house,Speaker of the House of Representatives,JMF,aston,1967-02-21,1969-09-29
+house,Speaker of the House of Representatives,JMF,aston,1969-11-25,1972-11-02
+house,Speaker of the House of Representatives,JOS,bell,1934-10-23,1937-09-21
+house,Speaker of the House of Representatives,JOS,bell,1937-11-30,1940-08-27
+house,Speaker of the House of Representatives,JTY,cameron,1950-02-22,1951-03-19
+house,Speaker of the House of Representatives,JTY,cameron,1951-06-12,1954-04-21
+house,Speaker of the House of Representatives,JTY,cameron,1954-08-04,1955-11-04
+house,Speaker of the House of Representatives,JTY,cameron,1956-02-15,1956-08-09
+house,Speaker of the House of Representatives,JVR,nairn,1940-11-20,1943-06-21
+house,Speaker of the House of Representatives,K5L,cope,1973-02-27,1974-04-11
+house,Speaker of the House of Representatives,K5L,cope,1974-07-09,1975-02-27
+house,Speaker of the House of Representatives,K99,johnson,1913-07-09,1914-07-30
+house,Speaker of the House of Representatives,K99,johnson,1917-06-14,1919-11-03
+house,Speaker of the House of Representatives,K99,johnson,1920-02-26,1922-11-06
+house,Speaker of the House of Representatives,KFK,groom,1926-01-13,1928-10-09
+house,Speaker of the House of Representatives,KFK,groom,1929-02-06,1929-09-16
+house,Speaker of the House of Representatives,KHI,holder,1901-05-09,1903-11-23
+house,Speaker of the House of Representatives,KHI,holder,1904-03-02,1906-11-05
+house,Speaker of the House of Representatives,KHI,holder,1907-02-20,1909-07-23
+house,Speaker of the House of Representatives,KIT,mackay,1932-02-17,1934-08-07
+house,Speaker of the House of Representatives,KLL,makin,1929-11-20,1931-11-27
+house,Speaker of the House of Representatives,KQP,mcdonald,1910-07-01,1913-04-23
+house,Speaker of the House of Representatives,KQP,mcdonald,1914-10-08,1917-03-26
+house,Speaker of the House of Representatives,KSC,mcleay,1956-08-29,1958-10-14
+house,Speaker of the House of Representatives,KSC,mcleay,1959-02-17,1961-11-02
+house,Speaker of the House of Representatives,KSC,mcleay,1962-02-20,1963-11-01
+house,Speaker of the House of Representatives,KSC,mcleay,1964-02-25,1966-10-31
+house,Speaker of the House of Representatives,KXG,watt,1923-02-28,1925-10-03
+house,Speaker of the House of Representatives,L08,rosevear,1943-06-22,1943-07-07
+house,Speaker of the House of Representatives,L08,rosevear,1943-09-23,1946-08-16
+house,Speaker of the House of Representatives,L08,rosevear,1946-11-06,1949-10-31
+house,Speaker of the House of Representatives,L0K,salmon,1909-07-28,1910-02-19
+house,Speaker of the House of Representatives,SE4,bishop,2013-11-12,2015-08-02
+house,Temporary Chairman of Committees,A48,chifley,1930-07-29,1931-11-27
+house,Temporary Chairman of Committees,F4T,fadden,1937-12-01,1940-04-17
+house,Temporary Chairman of Committees,JLL,abbott,1943-09-29,1949-10-31
+house,Temporary Chairman of Committees,JMG,atkinson,1913-09-04,1922-11-06
+house,Temporary Chairman of Committees,JNM,badman,1940-04-17,1943-07-07
+house,Temporary Chairman of Committees,JNV,bamford,1911-11-15,1913-04-23
+house,Temporary Chairman of Committees,JNV,bamford,1914-04-15,1919-11-03
+house,Temporary Chairman of Committees,JNV,bamford,1920-05-13,1922-11-06
+house,Temporary Chairman of Committees,JNX,barnard,1943-09-29,1946-08-16
+house,Temporary Chairman of Committees,JOC,batchelor,1901-06-20,1908-11-25
+house,Temporary Chairman of Committees,JOG,bayley,1923-06-13,1925-10-03
+house,Temporary Chairman of Committees,JPE,bird,1954-08-10,1955-11-04
+house,Temporary Chairman of Committees,JRJ,bowden,1946-11-07,1958-10-14
+house,Temporary Chairman of Committees,JSG,brimblecombe,1962-02-22,1966-05-05
+house,Temporary Chairman of Committees,JTF,burke,1946-11-07,1948-09-01
+house,Temporary Chairman of Committees,JTF,burke,1948-11-30,1954-04-21
+house,Temporary Chairman of Committees,JUQ,clark,1943-09-29,1946-08-16
+house,Temporary Chairman of Committees,JUQ,clark,1956-09-13,1961-11-02
+house,Temporary Chairman of Committees,JUQ,clark,1964-02-27,1966-05-05
+house,Temporary Chairman of Committees,JVJ,mulcahy,1943-09-29,1949-10-31
+house,Temporary Chairman of Committees,JVR,nairn,1933-03-09,1940-08-27
+house,Temporary Chairman of Committees,JVZ,cameron,1932-03-02,1934-08-07
+house,Temporary Chairman of Committees,JWG,fowler,1907-07-11,1913-04-23
+house,Temporary Chairman of Committees,JWT,francis,1930-07-29,1931-11-27
+house,Temporary Chairman of Committees,JWV,chaney,1959-02-18,1961-11-02
+house,Temporary Chairman of Committees,JWY,chanter,1910-07-14,1913-04-23
+house,Temporary Chairman of Committees,JXA,charlton,1913-09-04,1922-05-16
+house,Temporary Chairman of Committees,JXI,freeth,1956-02-23,1958-10-14
+house,Temporary Chairman of Committees,JY7,duncan-hughes,1927-09-30,1928-10-09
+house,Temporary Chairman of Committees,K0D,collins,1934-11-16,1940-08-27
+house,Temporary Chairman of Committees,K2A,rankin,1940-11-22,1949-10-31
+house,Temporary Chairman of Committees,K4M,cook,1923-06-13,1927-10-07
+house,Temporary Chairman of Committees,K4X,nock,1934-11-16,1937-09-21
+house,Temporary Chairman of Committees,K7U,crouch,1909-08-05,1910-02-19
+house,Temporary Chairman of Committees,K7U,crouch,1929-11-26,1931-11-27
+house,Temporary Chairman of Committees,K99,johnson,1909-06-23,1913-04-23
+house,Temporary Chairman of Committees,KCU,drury,1962-02-22,1966-05-05
+house,Temporary Chairman of Committees,KDB,edmonds,1954-08-10,1955-11-04
+house,Temporary Chairman of Committees,KDH,eggins,1944-08-01,1945-08-01
+house,Temporary Chairman of Committees,KDS,failes,1959-02-18,1966-05-05
+house,Temporary Chairman of Committees,KDV,jones,1964-02-27,1966-05-05
+house,Temporary Chairman of Committees,KE4,keane,1930-07-29,1931-11-27
+house,Temporary Chairman of Committees,KEP,falkinder,1956-02-23,1966-05-05
+house,Temporary Chairman of Committees,KFC,fleming,1920-03-04,1922-11-06
+house,Temporary Chairman of Committees,KFK,groom,1904-03-17,1905-08-02
+house,Temporary Chairman of Committees,KFQ,gullett,1946-11-07,1949-10-31
+house,Temporary Chairman of Committees,KFW,guy,1932-03-02,1932-10-13
+house,Temporary Chairman of Committees,KFW,guy,1940-11-22,1946-08-16
+house,Temporary Chairman of Committees,KFX,hadley,1946-11-07,1949-10-31
+house,Temporary Chairman of Committees,KGP,haworth,1960-10-25,1966-05-05
+house,Temporary Chairman of Committees,KI7,howse,1923-06-13,1925-01-16
+house,Temporary Chairman of Committees,KID,luchetti,1954-08-10,1955-11-04
+house,Temporary Chairman of Committees,KID,luchetti,1959-02-18,1961-11-02
+house,Temporary Chairman of Committees,KIH,lucock,1956-02-23,1961-03-08
+house,Temporary Chairman of Committees,KIR,hurry,1927-09-30,1929-09-16
+house,Temporary Chairman of Committees,KIT,mackay,1929-02-20,1931-11-27
+house,Temporary Chairman of Committees,KIX,hutchinson,1943-09-29,1949-10-31
+house,Temporary Chairman of Committees,KK7,jennings,1940-04-17,1940-08-27
+house,Temporary Chairman of Committees,KKU,mackinnon,1962-02-22,1966-05-05
+house,Temporary Chairman of Committees,KLL,makin,1923-06-13,1929-09-16
+house,Temporary Chairman of Committees,KLL,makin,1936-10-28,1941-10-07
+house,Temporary Chairman of Committees,KLL,makin,1956-09-13,1961-11-02
+house,Temporary Chairman of Committees,KLM,maloney,1910-07-14,1917-03-26
+house,Temporary Chairman of Committees,KMQ,mann,1925-06-17,1928-10-09
+house,Temporary Chairman of Committees,KMS,manning,1926-01-22,1927-09-30
+house,Temporary Chairman of Committees,KMZ,martens,1932-03-02,1946-08-16
+house,Temporary Chairman of Committees,KNJ,mauger,1905-08-02,1906-06-15
+house,Temporary Chairman of Committees,KNJ,mauger,1906-06-16,1906-11-05
+house,Temporary Chairman of Committees,KNT,harrison,1934-11-16,1937-09-21
+house,Temporary Chairman of Committees,KQK,mcdonald,1950-03-02,1953-06-10
+house,Temporary Chairman of Committees,KQP,mcdonald,1901-06-20,1906-06-20
+house,Temporary Chairman of Committees,KRE,sheehan,1946-11-07,1949-10-31
+house,Temporary Chairman of Committees,KRI,sheehy,1946-11-07,1949-10-31
+house,Temporary Chairman of Committees,KSC,mcleay,1952-08-27,1956-08-29
+house,Temporary Chairman of Committees,KU9,solomon,1901-06-20,1903-11-23
+house,Temporary Chairman of Committees,KUW,stacey,1940-11-22,1943-07-07
+house,Temporary Chairman of Committees,KUX,stewart,1964-02-27,1969-09-26
+house,Temporary Chairman of Committees,KVT,thompson,1950-03-02,1954-04-21
+house,Temporary Chairman of Committees,KVU,thompson,1932-03-02,1934-08-07
+house,Temporary Chairman of Committees,KW8,thomson,1913-09-04,1917-03-26
+house,Temporary Chairman of Committees,KWE,timson,1953-09-09,1960-10-16
+house,Temporary Chairman of Committees,KX7,ward,1932-03-02,1937-06-22
+house,Temporary Chairman of Committees,KX9,watkins,1920-03-04,1931-11-27
+house,Temporary Chairman of Committees,KXB,watkins,1940-11-22,1954-04-21
+house,Temporary Chairman of Committees,KXI,webb,1956-09-13,1958-10-14
+house,Temporary Chairman of Committees,KXZ,peters,1956-09-13,1961-11-02
+house,Temporary Chairman of Committees,KXZ,peters,1964-02-27,1966-05-05
+house,Temporary Chairman of Committees,KY9,piesse,1901-06-20,1902-03-06
+house,Temporary Chairman of Committees,KYD,poynton,1908-11-25,1910-02-19
+house,Temporary Chairman of Committees,KYH,price,1937-12-01,1940-08-27
+house,Temporary Chairman of Committees,KYI,prowse,1927-10-07,1934-08-07
+house,Temporary Chairman of Committees,KYR,kirwan,1901-06-20,1903-11-23
+house,Temporary Chairman of Committees,KYZ,riordan,1932-03-02,1936-10-15
+house,Temporary Chairman of Committees,KZG,roberts,1910-07-14,1911-11-15
+house,Temporary Chairman of Committees,KZR,white,1932-03-02,1933-01-14
+house,Temporary Chairman of Committees,KZW,lawrence,1956-02-23,1958-10-14
+house,Temporary Chairman of Committees,KZZ,lawson,1934-11-16,1939-04-26
+house,Temporary Chairman of Committees,L07,lazzarini,1948-09-02,1949-10-31
+house,Temporary Chairman of Committees,L08,rosevear,1934-11-28,1943-06-22
+house,Temporary Chairman of Committees,L0G,ryan,1943-09-29,1950-10-11
+house,Temporary Chairman of Committees,L0G,ryan,1950-11-28,1952-08-26
+house,Temporary Chairman of Committees,L0I,ryrie,1926-01-22,1927-09-30
+house,Temporary Chairman of Committees,L0K,salmon,1901-06-20,1903-11-23
+house,Temporary Chairman of Committees,L0K,salmon,1907-07-11,1909-07-28
+house,Temporary Chairman of Committees,L0V,wight,1959-02-18,1961-11-02
+house,Temporary Chairman of Committees,L17,wilks,1904-03-17,1909-06-23
+house,Temporary Chairman of Committees,L1P,wise,1917-09-26,1917-09-26
+house,Temporary Chairman of Committees,L1T,yates,1929-11-26,1931-11-27
+senate,Acting President of the Senate,JXR,drake-brockman,1966-08-30,1966-09-28
+senate,Acting President of the Senate,JXR,drake-brockman,1976-09-07,1976-09-16
+senate,Acting President of the Senate,K5H,scott,1979-02-27,1979-03-20
+senate,Acting President of the Senate,K5H,scott,1979-09-20,1979-10-05
+senate,Acting President of the Senate,KBL,wood,1962-11-06,1962-11-08
+senate,Acting President of the Senate,KBL,wood,1965-09-29,1965-09-29
+senate,Acting President of the Senate,KBL,wood,1972-08-22,1972-08-24
+senate,Acting President of the Senate,KBL,wood,1972-08-29,1972-08-31
+senate,Acting President of the Senate,KSW,maunsell,1981-02-28,1981-03-06
+senate,Acting President of the Senate,KSW,maunsell,1981-04-14,1981-05-01
+senate,Acting President of the Senate,PF4,colston,1990-09-13,1990-09-25
+senate,Acting President of the Senate,PF4,colston,1991-03-15,1991-04-05
+senate,Acting President of the Senate,PF4,colston,1991-07-18,1991-07-21
+senate,Acting President of the Senate,PF4,colston,1991-07-26,1991-08-02
+senate,Acting President of the Senate,PF4,colston,1991-10-17,1991-11-06
+senate,Acting President of the Senate,PF4,colston,1992-01-03,1992-01-24
+senate,Acting President of the Senate,PF4,colston,1992-03-07,1992-03-13
+senate,Acting President of the Senate,PF4,colston,1992-04-13,1992-05-02
+senate,Acting President of the Senate,PF4,colston,1992-09-17,1992-09-17
+senate,Acting President of the Senate,PF4,colston,1992-10-03,1992-10-10
+senate,Acting President of the Senate,PF4,colston,1992-10-20,1992-11-04
+senate,Acting President of the Senate,PF4,colston,1993-01-12,1993-01-16
+senate,Acting President of the Senate,PF4,colston,1993-04-17,1993-04-30
+senate,Acting President of the Senate,PF4,colston,1993-07-25,1993-08-04
+senate,Acting President of the Senate,PF4,colston,1996-09-20,1996-10-06
+senate,Acting President of the Senate,PF4,colston,1997-04-01,1997-05-06
+senate,Chair of Committees,00AOP,marshall,2014-07-07,2016-05-09
+senate,Chair of Committees,112096,lines,2016-08-30,2022-07-26
+senate,Chair of Committees,1X4,west,1997-05-06,2002-06-30
+senate,Chair of Committees,287062,mclachlan,2022-07-26,2025-07-22
+senate,Chair of Committees,30484,brockman,2025-07-22,
+senate,Chair of Committees,4H4,hamer,1983-04-21,1987-06-05
+senate,Chair of Committees,4H4,hamer,1987-09-14,1990-06-30
+senate,Chair of Committees,7L6,hogg,2002-08-19,2008-08-25
+senate,Chair of Committees,EP5,ferguson,2008-08-26,2011-06-30
+senate,Chair of Committees,PF4,colston,1990-08-21,1993-08-16
+senate,Chair of Committees,VI4,reid,1995-05-09,1996-08-19
+senate,Chair of Committees,XF4,crichton-browne,1993-08-17,1995-05-09
+senate,Chairman of Committees,JPC,best,1901-06-28,1903-12-31
+senate,Chairman of Committees,JQY,courtice,1943-09-23,1946-11-01
+senate,Chairman of Committees,JVC,dobson,1908-11-25,1910-06-30
+senate,Chairman of Committees,JXR,drake-brockman,1965-03-16,1969-11-11
+senate,Chairman of Committees,JXR,drake-brockman,1976-02-17,1978-06-30
+senate,Chairman of Committees,JXV,newlands,1923-07-05,1926-06-30
+senate,Chairman of Committees,JY6,nicholls,1946-11-06,1951-03-19
+senate,Chairman of Committees,JZ9,o'keefe,1910-07-01,1914-07-30
+senate,Chairman of Committees,K0F,pearce,1907-02-21,1908-11-13
+senate,Chairman of Committees,K0S,plain,1926-07-01,1932-06-30
+senate,Chairman of Committees,K18,bakhap,1920-07-21,1923-06-30
+senate,Chairman of Committees,K1R,prowse,1971-08-17,1973-12-31
+senate,Chairman of Committees,K2A,rankin,1951-06-12,1953-06-30
+senate,Chairman of Committees,K2G,reid,1953-09-08,1962-05-22
+senate,Chairman of Committees,K3J,bull,1969-11-25,1971-06-30
+senate,Chairman of Committees,K3L,sampson,1935-09-24,1938-06-30
+senate,Chairman of Committees,K5H,scott,1978-08-15,1979-12-10
+senate,Chairman of Committees,K5V,shannon,1917-07-12,1920-06-30
+senate,Chairman of Committees,K6P,brown,1941-07-01,1943-09-23
+senate,Chairman of Committees,KAS,webster,1974-03-05,1975-12-21
+senate,Chairman of Committees,KHE,higgs,1904-03-16,1906-12-31
+senate,Chairman of Committees,KOJ,hays,1932-09-01,1935-06-30
+senate,Chairman of Committees,KOS,henderson,1914-10-09,1917-06-30
+senate,Chairman of Committees,KSW,maunsell,1980-02-19,1981-06-30
+senate,Chairman of Committees,KTA,mcclelland,1981-08-20,1981-10-22
+senate,Chairman of Committees,KTA,mcclelland,1981-10-22,1983-02-04
+senate,Chairman of Committees,KTL,mckellar,1962-08-07,1964-12-21
+senate,Chairman of Committees,KTX,mclachlan,1938-07-01,1941-06-30
+senate,Deputy President and Chair of Committees,4H4,hamer,1983-04-21,1987-06-05
+senate,Deputy President and Chair of Committees,4H4,hamer,1987-09-14,1990-06-30
+senate,Deputy President and Chair of Committees,KTA,mcclelland,1981-10-22,1983-02-04
+senate,Deputy President and Chair of Committees,PF4,colston,1990-08-21,1993-08-16
+senate,Deputy President and Chair of Committees,PF4,colston,1996-08-20,1997-05-06
+senate,Deputy President and Chair of Committees,VI4,reid,1995-05-09,1996-08-19
+senate,Deputy President and Chair of Committees,XF4,crichton-browne,1993-08-17,1995-05-09
+senate,Deputy President of the Senate,00AOP,marshall,2014-07-07,2016-05-09
+senate,Deputy President of the Senate,112096,lines,2016-08-30,2022-07-26
+senate,Deputy President of the Senate,1X4,west,1997-05-06,2002-06-30
+senate,Deputy President of the Senate,287062,mclachlan,2022-07-26,2025-07-22
+senate,Deputy President of the Senate,30484,brockman,2025-07-22,
+senate,Deputy President of the Senate,7L6,hogg,2002-08-19,2008-08-25
+senate,Deputy President of the Senate,E5V,parry,2011-07-04,2014-07-07
+senate,Deputy President of the Senate,EP5,ferguson,2008-08-26,2011-06-30
+senate,Deputy President of the Senate,JXR,drake-brockman,1965-03-16,1969-11-11
+senate,Deputy President of the Senate,JXR,drake-brockman,1976-02-17,1978-06-30
+senate,Deputy President of the Senate,K2G,reid,1960-04-01,1960-06-01
+senate,Deputy President of the Senate,K2G,reid,1960-08-01,1960-10-01
+senate,Deputy President of the Senate,K2G,reid,1961-09-01,1961-09-01
+senate,Deputy President of the Senate,K5H,scott,1978-08-15,1979-12-10
+senate,Deputy President of the Senate,KAS,webster,1974-03-05,1975-12-31
+senate,President of the Senate,112096,lines,2022-07-26,
+senate,President of the Senate,30484,brockman,2021-10-18,2022-07-25
+senate,President of the Senate,5F4,calvert,2002-08-19,2007-08-14
+senate,President of the Senate,7L6,hogg,2008-08-26,2014-06-30
+senate,President of the Senate,E5V,parry,2014-07-07,2016-05-09
+senate,President of the Senate,E5V,parry,2016-08-30,2017-11-13
+senate,President of the Senate,EJ4,sibraa,1987-02-17,1987-06-05
+senate,President of the Senate,EJ4,sibraa,1987-09-14,1994-01-31
+senate,President of the Senate,EP5,ferguson,2007-08-14,2008-08-25
+senate,President of the Senate,I0Q,ryan,2017-11-13,2021-10-13
+senate,President of the Senate,JQQ,cormack,1971-08-17,1974-04-11
+senate,President of the Senate,JTK,cunningham,1941-07-01,1943-07-04
+senate,President of the Senate,JXV,newlands,1926-07-01,1929-08-13
+senate,President of the Senate,JYA,o'byrne,1974-07-09,1975-11-11
+senate,President of the Senate,K6P,brown,1943-09-23,1951-03-19
+senate,President of the Senate,K8W,turley,1910-07-01,1913-07-08
+senate,President of the Senate,KBY,young,1981-08-18,1983-02-04
+senate,President of the Senate,KLS,givens,1913-07-09,1914-07-30
+senate,President of the Senate,KLS,givens,1914-10-08,1926-06-30
+senate,President of the Senate,KLZ,gould,1907-02-20,1910-06-30
+senate,President of the Senate,KOF,hayes,1938-07-01,1941-06-30
+senate,President of the Senate,KPQ,kingsmill,1929-08-14,1932-08-30
+senate,President of the Senate,KQN,laucke,1976-02-17,1981-06-30
+senate,President of the Senate,KRZ,lynch,1932-08-31,1938-06-30
+senate,President of the Senate,KSS,mattner,1951-06-12,1953-09-07
+senate,President of the Senate,KTA,mcclelland,1983-04-21,1987-01-23
+senate,President of the Senate,KUH,mcmullin,1953-09-08,1971-06-30
+senate,President of the Senate,L2E,baker,1901-05-09,1906-12-31
+senate,President of the Senate,NE4,beahan,1994-02-01,1996-06-30
+senate,President of the Senate,VI4,reid,1996-08-20,2002-08-18
+senate,Temporary Chair of Committees,008W7,brandis,2002-09-18,2007-02-06
+senate,Temporary Chair of Committees,00A9C,cherry,2002-10-17,2005-06-30
+senate,Temporary Chair of Committees,00AOL,colbeck,2025-07-22,
+senate,Temporary Chair of Committees,00AOO,kirk,2003-06-25,2008-06-30
+senate,Temporary Chair of Committees,00AOP,marshall,2003-06-25,2014-07-07
+senate,Temporary Chair of Committees,00AOQ,moore,2004-11-17,2013-11-11
+senate,Temporary Chair of Committees,00AOS,stephens,2011-07-07,2014-06-30
+senate,Temporary Chair of Committees,00AUF,barnett,2005-08-11,2011-06-30
+senate,Temporary Chair of Committees,112096,lines,2014-07-07,2016-05-09
+senate,Temporary Chair of Committees,122087,mccarthy,2017-10-18,2019-07-22
+senate,Temporary Chair of Committees,140651,o'neill,2014-07-07,2016-05-09
+senate,Temporary Chair of Committees,140651,o'neill,2020-09-01,
+senate,Temporary Chair of Committees,168275,sheldon,2020-08-26,2020-09-01
+senate,Temporary Chair of Committees,168275,sheldon,2022-07-26,
+senate,Temporary Chair of Committees,195565,whish-wilson,2013-11-12,2016-05-09
+senate,Temporary Chair of Committees,1I4,mckiernan,1993-08-18,2002-06-30
+senate,Temporary Chair of Committees,204953,gallacher,2013-11-12,2016-05-09
+senate,Temporary Chair of Committees,204953,gallacher,2019-07-02,2021-08-29
+senate,Temporary Chair of Committees,207825,mckenzie,2012-05-10,2013-11-11
+senate,Temporary Chair of Committees,217241,mcgrath,2018-09-10,2025-03-28
+senate,Temporary Chair of Committees,225099,dastyari,2014-07-07,2016-05-09
+senate,Temporary Chair of Committees,225307,edwards,2012-05-10,2016-05-09
+senate,Temporary Chair of Committees,237920,stoker,2019-07-02,2020-12-22
+senate,Temporary Chair of Committees,241710,smith,2013-11-12,2016-05-09
+senate,Temporary Chair of Committees,241710,smith,2018-09-19,2019-02-12
+senate,Temporary Chair of Committees,241710,smith,2022-07-26,2024-02-06
+senate,Temporary Chair of Committees,243273,ruston,2013-11-12,2014-07-07
+senate,Temporary Chair of Committees,247512,kitching,2017-10-18,2022-03-10
+senate,Temporary Chair of Committees,250216,reynolds,2015-10-14,2018-09-10
+senate,Temporary Chair of Committees,250216,reynolds,2022-07-26,2025-06-30
+senate,Temporary Chair of Committees,250362,faruqi,2019-07-02,2022-07-26
+senate,Temporary Chair of Committees,252157,walsh,2020-02-04,2025-05-13
+senate,Temporary Chair of Committees,257613,ghosh,2025-07-22,
+senate,Temporary Chair of Committees,263418,duniam,2018-09-19,2019-05-29
+senate,Temporary Chair of Committees,264449,chandler,2020-02-04,2025-02-04
+senate,Temporary Chair of Committees,266499,hume,2018-09-10,2019-05-29
+senate,Temporary Chair of Committees,274506,sharma,2025-07-22,
+senate,Temporary Chair of Committees,281503,ciccone,2025-07-22,
+senate,Temporary Chair of Committees,281558,askew,2019-07-02,2022-07-26
+senate,Temporary Chair of Committees,281603,smith,2020-02-10,2026-09-14
+senate,Temporary Chair of Committees,282997,scarr,2026-03-02,
+senate,Temporary Chair of Committees,283585,o'sullivan,2022-07-26,
+senate,Temporary Chair of Committees,287062,mclachlan,2020-08-26,2022-07-26
+senate,Temporary Chair of Committees,296215,cox,2022-07-26,
+senate,Temporary Chair of Committees,296331,grogan,2025-07-22,
+senate,Temporary Chair of Committees,298839,allman-payne,2022-07-26,2025-03-28
+senate,Temporary Chair of Committees,299352,stewart,2026-09-09,
+senate,Temporary Chair of Committees,2F4,burns,1987-09-15,1993-05-05
+senate,Temporary Chair of Committees,2L6,bishop,2008-02-12,2014-06-30
+senate,Temporary Chair of Committees,2M6,coonan,2011-08-16,2011-08-22
+senate,Temporary Chair of Committees,30484,brockman,2018-09-19,2021-10-18
+senate,Temporary Chair of Committees,306168,kovacic,2025-07-22,2026-08-11
+senate,Temporary Chair of Committees,310860,hodgins-may,2025-07-28,2026-10-12
+senate,Temporary Chair of Committees,315170,blyth,2026-08-11,
+senate,Temporary Chair of Committees,3M6,murray,2005-08-09,2008-06-30
+senate,Temporary Chair of Committees,5F4,calvert,1989-06-14,1997-03-04
+senate,Temporary Chair of Committees,5F4,calvert,1997-09-03,2002-08-19
+senate,Temporary Chair of Committees,656,forshaw,2002-02-12,2002-08-27
+senate,Temporary Chair of Committees,656,forshaw,2005-08-09,2011-06-30
+senate,Temporary Chair of Committees,76760,griff,2019-07-02,
+senate,Temporary Chair of Committees,7E4,vanstone,1991-02-18,1993-05-05
+senate,Temporary Chair of Committees,7L6,hogg,1997-09-29,2002-08-19
+senate,Temporary Chair of Committees,7Y6,crossin,2004-11-16,2008-02-12
+senate,Temporary Chair of Committees,7Y6,crossin,2008-09-04,2013-09-06
+senate,Temporary Chair of Committees,84L,mclucas,2002-02-12,2004-11-16
+senate,Temporary Chair of Committees,84P,hutchins,2002-08-22,2011-06-30
+senate,Temporary Chair of Committees,9X5,ellison,2008-09-25,2009-01-30
+senate,Temporary Chair of Committees,AI6,cameron,2011-07-07,2013-11-11
+senate,Temporary Chair of Committees,BV7,sinodinos,2012-06-27,2012-09-20
+senate,Temporary Chair of Committees,CDK,peris,2014-07-07,2016-05-09
+senate,Temporary Chair of Committees,CX5,macdonald,2002-08-27,2005-08-11
+senate,Temporary Chair of Committees,CX5,macdonald,2007-02-08,2008-06-30
+senate,Temporary Chair of Committees,DT6,bartlett,1998-11-10,2002-10-15
+senate,Temporary Chair of Committees,DT6,bartlett,2008-02-12,2008-06-30
+senate,Temporary Chair of Committees,DYU,fawcett,2011-08-25,2014-07-07
+senate,Temporary Chair of Committees,DYU,fawcett,2017-10-18,2018-09-10
+senate,Temporary Chair of Committees,DYU,fawcett,2019-07-02,2025-06-30
+senate,Temporary Chair of Committees,E4Q,adams,2011-07-07,2012-03-31
+senate,Temporary Chair of Committees,E4T,fierravanti-wells,2008-06-26,2008-09-19
+senate,Temporary Chair of Committees,E4T,fierravanti-wells,2019-07-02,2022-06-30
+senate,Temporary Chair of Committees,E4U,hurley,2008-09-04,2011-06-30
+senate,Temporary Chair of Committees,E5D,joyce,2008-06-26,2008-09-18
+senate,Temporary Chair of Committees,E5E,mcewen,2008-02-12,2008-09-04
+senate,Temporary Chair of Committees,E5V,parry,2008-06-26,2009-06-15
+senate,Temporary Chair of Committees,E5X,polley,2010-09-28,2013-11-11
+senate,Temporary Chair of Committees,E5X,polley,2019-11-25,
+senate,Temporary Chair of Committees,E68,sterle,2013-11-12,2016-05-09
+senate,Temporary Chair of Committees,E68,sterle,2019-07-02,
+senate,Temporary Chair of Committees,E6A,trood,2008-06-26,2011-06-30
+senate,Temporary Chair of Committees,EP5,ferguson,1996-05-01,2007-08-14
+senate,Temporary Chair of Committees,EU4,o'chee,1993-05-05,1993-08-18
+senate,Temporary Chair of Committees,F49,brown,2008-02-12,2010-09-28
+senate,Temporary Chair of Committees,F49,brown,2019-07-02,2022-07-26
+senate,Temporary Chair of Committees,FE4,zakharov,1987-10-20,1995-03-06
+senate,Temporary Chair of Committees,FF4,chapman,1993-05-05,2008-06-30
+senate,Temporary Chair of Committees,FX5,murphy,1996-09-12,2002-02-12
+senate,Temporary Chair of Committees,G0D,bernardi,2009-03-11,2010-02-02
+senate,Temporary Chair of Committees,G0D,bernardi,2012-10-10,2016-05-02
+senate,Temporary Chair of Committees,G0D,bernardi,2019-07-02,2020-01-20
+senate,Temporary Chair of Committees,G1N,kroger,2010-09-28,2011-07-06
+senate,Temporary Chair of Committees,GB6,collins,1997-09-03,1998-11-09
+senate,Temporary Chair of Committees,GB6,collins,2002-08-22,2003-06-24
+senate,Temporary Chair of Committees,GG4,foreman,1997-05-29,1997-09-15
+senate,Temporary Chair of Committees,GI4,morris,1987-02-24,1990-06-30
+senate,Temporary Chair of Committees,GX5,troeth,2005-08-09,2011-06-30
+senate,Temporary Chair of Committees,H6V,boyce,2010-02-02,2014-06-30
+senate,Temporary Chair of Committees,HBE,fisher,2010-09-28,2012-08-14
+senate,Temporary Chair of Committees,HZB,bilyk,2019-07-25,2025-06-30
+senate,Temporary Chair of Committees,HZE,seselja,2014-07-07,2016-05-09
+senate,Temporary Chair of Committees,I07,ludlam,2010-05-13,2014-07-07
+senate,Temporary Chair of Committees,I0M,cash,2010-02-02,2010-09-28
+senate,Temporary Chair of Committees,I0P,furner,2011-07-07,2014-06-30
+senate,Temporary Chair of Committees,I0Q,ryan,2009-06-15,2010-09-28
+senate,Temporary Chair of Committees,I0T,pratt,2010-09-28,2014-06-30
+senate,Temporary Chair of Committees,I0T,pratt,2022-07-26,2025-06-30
+senate,Temporary Chair of Committees,I0V,williams,2014-07-09,2016-05-09
+senate,Temporary Chair of Committees,IF4,childs,1993-05-05,1997-09-10
+senate,Temporary Chair of Committees,J7Q,back,2011-07-07,2012-05-10
+senate,Temporary Chair of Committees,J7Q,back,2014-07-07,2016-05-02
+senate,Temporary Chair of Committees,KO6,humphries,2008-06-26,2010-02-02
+senate,Temporary Chair of Committees,LH4,jones,1985-02-22,1987-02-24
+senate,Temporary Chair of Committees,LI4,patterson,1996-05-01,1998-11-10
+senate,Temporary Chair of Committees,NB5,campbell,1999-08-09,2002-02-12
+senate,Temporary Chair of Committees,ND4,bjelke-petersen,1985-08-21,1993-05-05
+senate,Temporary Chair of Committees,PF4,colston,1978-08-22,1990-08-21
+senate,Temporary Chair of Committees,PF4,colston,1993-08-18,1996-08-20
+senate,Temporary Chair of Committees,PJ4,teague,1987-09-15,1996-06-30
+senate,Temporary Chair of Committees,RF4,cook,2002-02-12,2004-03-30
+senate,Temporary Chair of Committees,VJ4,watson,1995-05-10,2008-06-30
+senate,Temporary Chair of Committees,VW4,herron,1993-08-18,1996-05-01
+senate,Temporary Chair of Committees,WH4,mcgauran,1993-08-18,1996-05-01
+senate,Temporary Chair of Committees,WH4,mcgauran,2009-03-10,2011-06-30
+senate,Temporary Chair of Committees,WP6,lightfoot,1999-08-23,2008-06-30
+senate,Temporary Chair of Committees,XE4,bolkus,2002-09-16,2005-06-30
+senate,Temporary Chair of Committees,XF4,crichton-browne,1988-12-01,1993-08-17
+senate,Temporary Chair of Committees,XI4,reynolds,1995-03-02,1999-06-30
+senate,Temporary Chair of Committees,YH4,macgibbon,1985-02-22,1989-06-14
+senate,Temporary Chair of Committees,YH4,macgibbon,1997-03-04,1998-05-29
+senate,Temporary Chair of Committees,ZF4,crowley,1990-08-23,1993-05-05
+senate,Temporary Chair of Committees,ZF4,crowley,1996-09-12,2002-06-30
+senate,Temporary Chair of Committees,ZW4,sherry,1998-11-12,2002-02-12
+senate,Temporary Chairman of Committees,0V4,bonner,1974-07-10,1983-02-04
+senate,Temporary Chairman of Committees,1H4,haines,1981-09-08,1986-09-16
+senate,Temporary Chairman of Committees,1X4,west,1993-05-05,1997-05-06
+senate,Temporary Chairman of Committees,4H4,hamer,1981-09-08,1983-02-04
+senate,Temporary Chairman of Committees,5V4,coleman,1976-03-18,1987-06-05
+senate,Temporary Chairman of Committees,7V4,georges,1974-07-10,1976-03-18
+senate,Temporary Chairman of Committees,7V4,georges,1980-11-26,1983-02-04
+senate,Temporary Chairman of Committees,8G4,durack,1973-02-27,1974-04-11
+senate,Temporary Chairman of Committees,DV4,withers,1972-04-18,1972-10-31
+senate,Temporary Chairman of Committees,EJ4,sibraa,1978-08-22,1980-09-19
+senate,Temporary Chairman of Committees,EJ4,sibraa,1983-04-21,1985-05-15
+senate,Temporary Chairman of Committees,JE4,aulich,1990-08-23,1993-06-30
+senate,Temporary Chairman of Committees,JNT,abbott,1940-01-01,1941-01-01
+senate,Temporary Chairman of Committees,JQP,cooper,1938-01-01,1948-01-01
+senate,Temporary Chairman of Committees,JQQ,cormack,1967-04-12,1971-08-17
+senate,Temporary Chairman of Committees,JQY,courtice,1941-11-25,1943-01-01
+senate,Temporary Chairman of Committees,JQY,courtice,1952-10-07,1954-01-01
+senate,Temporary Chairman of Committees,JTK,cunningham,1937-01-01,1940-01-01
+senate,Temporary Chairman of Committees,JTT,davidson,1970-03-04,1981-06-30
+senate,Temporary Chairman of Committees,JUD,dein,1937-01-01,1938-11-18
+senate,Temporary Chairman of Committees,JUH,devitt,1974-07-10,1978-06-30
+senate,Temporary Chairman of Committees,JVC,dobson,1904-04-13,1908-01-01
+senate,Temporary Chairman of Committees,JXE,nash,1948-09-01,
+senate,Temporary Chairman of Committees,JXJ,needham,1914-01-01,1917-01-01
+senate,Temporary Chairman of Committees,JXR,drake-brockman,1962-08-21,1965-03-16
+senate,Temporary Chairman of Committees,JXT,neild,1903-01-01,1909-01-01
+senate,Temporary Chairman of Committees,JXZ,duncan,1924-01-01,1931-01-01
+senate,Temporary Chairman of Committees,JY6,nicholls,1951-06-20,1961-11-02
+senate,Temporary Chairman of Committees,JYA,o'byrne,1949-10-27,1961-11-02
+senate,Temporary Chairman of Committees,JYI,elstob,1981-09-08,1987-06-05
+senate,Temporary Chairman of Committees,JYX,findley,1926-06-22,1929-03-01
+senate,Temporary Chairman of Committees,JZ6,o'halloran,1929-11-21,1935-06-01
+senate,Temporary Chairman of Committees,JZB,fitzgerald,1967-02-22,1973-02-26
+senate,Temporary Chairman of Committees,JZH,amour,1938-09-28,1951-03-19
+senate,Temporary Chairman of Committees,JZQ,anderson,1956-02-23,1964-08-11
+senate,Temporary Chairman of Committees,JZR,ogden,1926-01-01,1928-09-01
+senate,Temporary Chairman of Committees,K09,payne,1929-08-01,1933-07-01
+senate,Temporary Chairman of Committees,K0L,pearson,1953-09-16,
+senate,Temporary Chairman of Committees,K0N,arnold,1941-11-21,1951-03-19
+senate,Temporary Chairman of Committees,K0S,plain,1923-03-01,1923-06-30
+senate,Temporary Chairman of Committees,K0S,plain,1926-01-01,1926-07-08
+senate,Temporary Chairman of Committees,K0Z,aylett,1941-01-01,1951-03-19
+senate,Temporary Chairman of Committees,K19,poke,1962-08-23,1964-02-25
+senate,Temporary Chairman of Committees,K19,poke,1968-09-17,
+senate,Temporary Chairman of Committees,K1F,poyser,1973-02-27,1975-03-06
+senate,Temporary Chairman of Committees,K1T,benn,1962-03-15,1965-09-14
+senate,Temporary Chairman of Committees,K1T,benn,1967-04-12,1968-06-30
+senate,Temporary Chairman of Committees,K1W,benny,1923-01-01,1923-01-01
+senate,Temporary Chairman of Committees,K2G,reid,1951-06-20,1953-03-26
+senate,Temporary Chairman of Committees,K2L,reid,1932-02-01,1935-06-01
+senate,Temporary Chairman of Committees,K2N,ridley,1964-02-26,
+senate,Temporary Chairman of Committees,K2U,robertson,1978-04-04,1980-08-19
+senate,Temporary Chairman of Committees,K3A,brown,1972-04-26,1974-04-11
+senate,Temporary Chairman of Committees,K3B,rowell,1923-03-01,1923-06-30
+senate,Temporary Chairman of Committees,K3E,russell,1913-01-01,1913-01-01
+senate,Temporary Chairman of Committees,K3J,bull,1967-04-18,1969-11-25
+senate,Temporary Chairman of Committees,K3L,sampson,1929-11-21,1935-01-01
+senate,Temporary Chairman of Committees,K3R,byrne,1969-05-29,
+senate,Temporary Chairman of Committees,K3W,cant,1970-03-04,
+senate,Temporary Chairman of Committees,K3X,carroll,1932-02-01,1936-05-01
+senate,Temporary Chairman of Committees,K4S,sandford,1964-02-26,1966-10-22
+senate,Temporary Chairman of Committees,K5H,scott,1985-02-22,1985-06-30
+senate,Temporary Chairman of Committees,K7H,collard,1978-08-22,1985-02-21
+senate,Temporary Chairman of Committees,K7Y,tangney,1962-03-15,1963-11-01
+senate,Temporary Chairman of Committees,K7Y,tangney,1965-09-14,
+senate,Temporary Chairman of Committees,K89,tate,1950-03-02,
+senate,Temporary Chairman of Committees,K8R,townley,1978-08-22,1987-06-05
+senate,Temporary Chairman of Committees,K8W,turley,1909-05-27,1909-01-01
+senate,Temporary Chairman of Committees,KAW,wedgwood,1962-08-21,1971-01-01
+senate,Temporary Chairman of Committees,KB9,wilkinson,1973-03-01,
+senate,Temporary Chairman of Committees,KBL,wood,1953-09-16,1978-06-30
+senate,Temporary Chairman of Committees,KBY,young,1976-02-19,1981-08-18
+senate,Temporary Chairman of Committees,KE4,keane,1938-01-01,1940-01-01
+senate,Temporary Chairman of Committees,KKD,jessop,1978-08-22,1982-03-10
+senate,Temporary Chairman of Committees,KKD,jessop,1985-02-22,1987-06-05
+senate,Temporary Chairman of Committees,KKR,fraser,1954-09-21,1955-11-04
+senate,Temporary Chairman of Committees,KLS,givens,1910-01-01,1912-01-01
+senate,Temporary Chairman of Committees,KLU,glasgow,1926-01-01,1926-06-22
+senate,Temporary Chairman of Committees,KMK,grant,1935-10-01,1939-12-01
+senate,Temporary Chairman of Committees,KOF,hayes,1933-06-30,1938-06-01
+senate,Temporary Chairman of Committees,KOJ,hays,1941-01-01,1947-06-30
+senate,Temporary Chairman of Committees,KOS,henderson,1910-01-01,1913-01-01
+senate,Temporary Chairman of Committees,KOU,hendrickson,1956-02-23,1966-10-31
+senate,Temporary Chairman of Committees,KPK,kennelly,1968-09-27,
+senate,Temporary Chairman of Committees,KPQ,kingsmill,1926-01-01,1929-08-01
+senate,Temporary Chairman of Committees,KQ4,mccoll,1907-01-01,1912-01-01
+senate,Temporary Chairman of Committees,KQN,laucke,1969-05-29,1972-10-31
+senate,Temporary Chairman of Committees,KQQ,laught,1964-08-11,1969-05-13
+senate,Temporary Chairman of Committees,KQV,lawrie,1970-03-04,1975-11-11
+senate,Temporary Chairman of Committees,KS9,macdonald,1935-10-01,1937-08-01
+senate,Temporary Chairman of Committees,KSL,maher,1950-03-02,1951-03-19
+senate,Temporary Chairman of Committees,KSN,marriott,1973-02-28,1975-11-11
+senate,Temporary Chairman of Committees,KSW,maunsell,1976-02-19,1978-08-22
+senate,Temporary Chairman of Committees,KSY,mcauliffe,1974-03-06,1978-04-04
+senate,Temporary Chairman of Committees,KT8,mccallum,1951-06-20,1955-11-04
+senate,Temporary Chairman of Committees,KTD,mcdougall,1913-01-01,1913-01-01
+senate,Temporary Chairman of Committees,KTD,mcdougall,1923-01-01,1923-01-01
+senate,Temporary Chairman of Committees,KTJ,mcintosh,1980-11-26,1983-02-04
+senate,Temporary Chairman of Committees,KTL,mckellar,1961-10-04,1962-08-07
+senate,Temporary Chairman of Committees,KTX,mclachlan,1937-12-02,1938-06-01
+senate,Temporary Chairman of Committees,KUJ,melzer,1975-08-26,1981-06-30
+senate,Temporary Chairman of Committees,KUS,milliner,1974-07-10,1975-06-30
+senate,Temporary Chairman of Committees,KVK,mulvihill,1974-07-10,1983-02-04
+senate,Temporary Chairman of Committees,L8O,mason,1986-09-16,1987-06-05
+senate,Temporary Chairman of Committees,ME4,baume,1987-10-07,1991-01-28
+senate,Temporary Chairman of Committees,NG4,lewis,1981-09-08,1985-02-21
+senate,Temporary Chairman of Committees,NJ4,tate,1985-05-15,1985-11-27
+senate,Temporary Chairman of Committees,OI4,powell,1987-09-15,1988-12-01
+senate,Temporary Chairman of Committees,TH4,knowles,1996-05-01,2005-06-30
+senate,Temporary Chairman of Committees,XG4,giles,1985-11-27,1993-06-30
