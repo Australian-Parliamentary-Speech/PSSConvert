@@ -67,7 +67,9 @@ the row, so existing columns keep their positions.
   from 61% to 78% (Senate) (Australian-Parliamentary-Speech/PSSConvert#186).
 - A collective voice ("Opposition members", "Government senators", "Honourable members") carrying one member's
   Handbook id, copied from the speech it interrupts (4,625 rows, mostly 1981–97), takes `OPPOSITION`, `GOVERNMENT`
-  or `MEMBERS` (Australian-Parliamentary-Speech/PSSConvert#109).
+  or `MEMBERS` (Australian-Parliamentary-Speech/PSSConvert#109). The party and electorate on such a row, often the
+  day's only print of them, are that member's: they fill the member's other rows that day, and the collective row
+  has `N/A` (Australian-Parliamentary-Speech/PSSConvert#211).
 - An id whose member was not in Parliament within 250 days of the date is replaced by the one member of the printed
   surname sitting in that chamber, even if the first name differs: "PAGE, Earle" in 1901 is James Page `KXO`
   (55 rows). Ids for which no such member sits are kept; most are letters or statements of a former member read
