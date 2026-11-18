@@ -32,7 +32,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             # #136: a member named with no id gets the id from the same day or the members list
             fill_id!(row,header_to_num,house,date,dids)
             presiding = presiding_phid!(row,header_to_num,house,date,heads)
-            presiding = presiding_id!(row,header_to_num,presiding)
+            presiding = presiding_id!(row,header_to_num,presiding,house,date)
             nonspeech_type = apply_conventions!(row,header_to_num)
             nonspeech_type == "written_answer" && answer_head_id!(row,header_to_num,house,date,dids)
             prev_wa = nonspeech_type == "written_answer" ? written_answer_id!(row,header_to_num,prev_wa) : nothing
@@ -137,6 +137,9 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             isna(string(piece[header_to_num[:party]])) && (piece[header_to_num[:party]] = k[2])
         end
         turn_page = "N/A"
+        # #204: speaker_no starts a new number when the source's number changes and also when the speaker changes,
+        # since the steps after column_decorate split rows and change names; rows a quote splits keep one number
+        sno, src_no = 0, nothing
         for (piece, pres, ptype) in built
             # #196: petitions and motions moved without a speech are not spoken
             if isflag(piece, header_to_num, :petition_flag) || isflag(piece, header_to_num, :motionnospeech_flag)
@@ -144,11 +147,18 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
                 ptype = isflag(piece, header_to_num, :petition_flag) ? "petition" : "motion"
             end
             key = turn_key(piece,header_to_num)
-            if !isnothing(key) && key != last_key
+            new_turn = !isnothing(key) && key != last_key
+            if new_turn
                 turn += 1
                 last_key = key
                 turn_page = "N/A"
             end
+            this_no = string(piece[header_to_num[:speaker_no]])
+            if new_turn || this_no != src_no
+                sno += 1
+                src_no = this_no
+            end
+            piece[header_to_num[:speaker_no]] = sno
             # #187: a row with no page of its own is on the page its turn started on, as far as the source says
             pg = string(piece[header_to_num[Symbol("page.no")]])
             if !isna(pg)

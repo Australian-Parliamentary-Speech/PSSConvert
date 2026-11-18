@@ -3,7 +3,7 @@
 #   #94 collective voices get a generic id: OPPOSITION, GOVERNMENT, or MEMBERS as the residual
 #   #95 spoken rows whose source names no one get name.id UNKNOWN (trial)
 #   #96 unspoken words are non-speech even with an id; nonspeech_type says what kind
-#   #97 turn_no counts changes of speaker (speaker_no stays the source order)
+#   #97 turn_no counts changes of speaker; speaker_no numbers source elements and changes with turn_no too (#204)
 #   #89 procedural lines with no speaker are non-speech
 
 const TYPE_FLAGS = [:question_flag, :answer_flag, :interjection_flag, :speech_flag, :petition_flag, :quote_flag, :motionnospeech_flag]
@@ -160,16 +160,23 @@ end
 const VOCATIVE = r"(?i)^(?:mr|madam)\.?\s+(?:acting\s+)?(?:deputy\s+)?(?:speaker|president|chair(?:man)?)\s*,\s*$"
 
 """#104: every presiding officer's spoken row has name.id 10000 (§2). Where the row carried the person's
-own id, it moves to presiding_phid. Returns the presiding_phid value."""
-function presiding_id!(row, h, presiding)
+own id, it moves to presiding_phid. Returns the presiding_phid value.
+#186: the person a bracket names comes first, and the row's id moves only if that member held a presiding office of
+the chamber on the date: SGML-era rows such as "Mr DEPUTY SPEAKER (Mr Nehl)" carried the member speaking around them."""
+function presiding_id!(row, h, presiding, house="house", date="")
     name = string(row[h[:name]])
     # a passage the presiding officer quotes or moves is theirs too, with 10000 (#148)
     spoken = any(f -> isflag(row, h, f), SPOKEN_FLAGS) || isflag(row, h, :quote_flag)
     (spoken && !isnothing(presiding_office(name)) && !occursin(NOT_PRESIDING, name) && !occursin(VOCATIVE, name)) || return presiding
     nid = uppercase(string(row[h[Symbol("name.id")]]))
     # #195: only a Handbook id moves; "UNKNOWN", "1000", "10000Collins" and the like are not the person
-    if is_phid(nid) && presiding == "N/A"
-        presiding = nid
+    if presiding == "N/A"
+        p = presiding_named(house, date, name)
+        if !isnothing(p)
+            presiding = p
+        elseif is_phid(nid) && any(t -> t[1] == house && t[3] == nid && in_term(t, date), presiding_terms())
+            presiding = nid
+        end
     end
     row[h[Symbol("name.id")]] = "10000"
     return presiding
@@ -347,7 +354,7 @@ const QUESTION_TIME = r"(?i)questions?\s+without\s+notice"
 # placed on the notice paper
 const ANSWERS_DEBATE = r"(?i)^\s*answers\s+to\s+questions"
 const QUESTION_TIME_ENDS = r"(?i)\btake\s+note\s+of\s+(?:the\s+)?answers?\b|\bfurther\s+questions\s+be\s+placed\s+on\s+the\s+notice\s+paper"
-const GENERIC_IDS = ("10000", "10001", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT", "GOVERNOR-GENERAL")
+const GENERIC_IDS = ("10000", "10001", "UNKNOWN", "MEMBERS", "OPPOSITION", "GOVERNMENT", "GOVERNOR-GENERAL", "VISITOR")
 year_of(date) = something(tryparse(Int, first(string(date), 4)), 0)
 spoken_row(r, h) = any(f -> isflag(r, h, f), SPOKEN_FLAGS)
 real_id(r, h) = (nid = string(r[h[Symbol("name.id")]]); !isna(nid) && !(nid in GENERIC_IDS))

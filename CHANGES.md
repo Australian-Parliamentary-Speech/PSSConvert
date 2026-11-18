@@ -34,7 +34,9 @@ the row, so existing columns keep their positions.
   sitting member, a collective voice (`OPPOSITION`, `GOVERNMENT`, `MEMBERS`), `GOVERNOR-GENERAL` or the Clerk's
   `10001`; otherwise `UNKNOWN` on a spoken row and `N/A` on others. This covers `20000` (1901–77), `Unknown`, old
   ParlInfo codes #88 could not map, and leftovers such as `#director`. ParlInfo's own codes for visiting heads of
-  state (`009C3` Bush, `G5F` Harper, `GYB` Obama) are kept (Australian-Parliamentary-Speech/PSSConvert#200).
+  state (`009C3` Bush, `G5F` Harper, `GYB` Obama) were kept (Australian-Parliamentary-Speech/PSSConvert#200); they
+  are now the generic code `VISITOR`, for a person who is not a member and speaks by invitation; the printed name
+  stays in `name` (17 rows; Australian-Parliamentary-Speech/PSSConvert#206).
 - A speaker heading cut between `name` and `content` ("Senator" + "GALLAGHER: I welcome …", "The PRESIDE" +
   "NT: …") is joined back into `name` and taken out of `content`; a bare title with a member's id takes the member's
   surname (Australian-Parliamentary-Speech/PSSConvert#201).
@@ -47,11 +49,29 @@ the row, so existing columns keep their positions.
 - `presiding_phid` holds only Handbook ids: values such as `UNKNOWN`, `1000`, `10000DEPUTY` and `10000Collins` are
   `N/A`. Handbook ids written in lower case (`e5z`) are upper case in `name.id` and `presiding_phid`
   (Australian-Parliamentary-Speech/PSSConvert#195).
-- `speaker_no` is the order number of the source row a row comes from. It never goes down, and it goes up on
-  every source row, stage directions included, but rows split from one source paragraph (stage directions, motions,
-  tables and documents taken out of a speech, a second speaker named inside it) share their source row's number, so
-  it repeats on about 18% of rows. Use `turn_no` to count turns, not `speaker_no`
-  (Australian-Parliamentary-Speech/PSSConvert#97, Australian-Parliamentary-Speech/PSSConvert#197).
+- `speaker_no` numbers the speech elements of the source in order. It never goes down, and it starts a new number
+  at every new source element and at every change of speaker (`turn_no`). Rows split from one source element with
+  the same speaker (a quote, a stage direction, a table or document taken out of a speech) share its number. Before
+  1.18 it did not change on 21,532 rows where the speaker did, because later steps split rows and change names
+  after it is set (Australian-Parliamentary-Speech/PSSConvert#97, Australian-Parliamentary-Speech/PSSConvert#197,
+  Australian-Parliamentary-Speech/PSSConvert#204).
+- `presiding_phid` is filled from ausPH's presiding-officer terms (`getPresidingOfficers()`, 1.1.1). A row under a
+  clean "Mr SPEAKER", "The PRESIDENT", "The CHAIRMAN" or "SPEAKER, Mr" (and in the Senate "The DEPUTY PRESIDENT"
+  before 1970) takes the one holder of the office on that date, unless an acting Speaker or President served that
+  day or the day's rows name someone else under that title. Deputy Speakers after 1960, the Speaker's panel,
+  acting and temporary chairs are filled only where the row names the person, now on either side of the bracket
+  ("Quick, Harry (Mr DEPUTY SPEAKER)"). Johnson was given as Speaker from 08/10/1914 to 26/03/1917, when McDonald
+  held the office; a garbled "MrDEPUTY SPEAKER (Mr Millar)" or "The DEPUTY-PRESIDENT (Senator Newlands)" could set
+  the day's Speaker or President; and SGML-era rows such as "Mr DEPUTY SPEAKER (Mr Nehl)" carried the id of the
+  member speaking around them. On a sample of every 15th day, filled chair rows rise from 65% to 79% (House) and
+  from 61% to 78% (Senate) (Australian-Parliamentary-Speech/PSSConvert#186).
+- A collective voice ("Opposition members", "Government senators", "Honourable members") carrying one member's
+  Handbook id, copied from the speech it interrupts (4,625 rows, mostly 1981–97), takes `OPPOSITION`, `GOVERNMENT`
+  or `MEMBERS` (Australian-Parliamentary-Speech/PSSConvert#109).
+- An id whose member was not in Parliament within 250 days of the date is replaced by the one member of the printed
+  surname sitting in that chamber, even if the first name differs: "PAGE, Earle" in 1901 is James Page `KXO`
+  (55 rows). Ids for which no such member sits are kept; most are letters or statements of a former member read
+  out (Australian-Parliamentary-Speech/PSSConvert#205).
 - The Speaker, President and Chair (rows with `name.id = 10000`) are always `speech_flag = 1`, never
   `interjection_flag`, `question_flag` or `answer_flag`. This reverses the question-time rule of
   Australian-Parliamentary-Speech/PSSConvert#55 (Australian-Parliamentary-Speech/PSSConvert#93).

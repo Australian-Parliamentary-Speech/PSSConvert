@@ -215,10 +215,25 @@ function relink!(row, h, house, date)
     id = string(row[h[nid]])
     is_phid(id) || return row
     name = string(row[h[:name]])
-    (isna(name) || !isnothing(presiding_office(name)) || !isnothing(collective_id(name))) && return row
+    (isna(name) || !isnothing(presiding_office(name))) && return row
+    # #109: "Opposition members" inside a minister's answer carried the minister's id (SGML era); the voice is collective
+    cid = collective_id(name)
+    if !isnothing(cid)
+        row[h[nid]] = cid
+        return row
+    end
     w = [lowercase(replace(t, '’' => '\'')) for t in name_words(name)]
     isempty(w) && return row
     own = get(MEMBER_NAME, id, "")
+    # #205: the id is a member not yet or no longer in Parliament ("PAGE, Earle" `C7E` in 1901): the printed surname
+    # gives the one member of that surname sitting in this chamber, whatever the first name
+    if !serving("house", id, date, 250) && !serving("senate", id, date, 250)
+        p = member_by_surname(house, date, w[end])
+        if !isnothing(p) && p != id && serving(house, p, date)
+            row[h[nid]] = p
+            return row
+        end
+    end
     if serving(house, id, date, 250)
         # #199: the printed surname must be another member's, and that member must be sitting
         surname = length(w) >= 2 && haskey(members(), (house, w[end-1] * " " * w[end])) ? w[end-1] * " " * w[end] : w[end]
@@ -243,7 +258,7 @@ const JUNK_CODES = ("EOF", "CHAMBER")
 not map, `#director`, a code read from a cut heading) takes what the printed name gives: one sitting member, a
 collective voice, the Governor-General or the Clerk. Otherwise it is `N/A`, which the later steps fill from the name
 (#136) or make `UNKNOWN` on a spoken row (#95). ParlInfo's own codes for non-members (visiting heads of state:
-`009C3`, `G5F`, `GYB`) are kept when the name gives nothing."""
+`009C3`, `G5F`, `GYB`) become `VISITOR` when the name gives nothing, and `N/A` with no printed name (#206)."""
 function clean_id!(row, h, house, date)
     nid = Symbol("name.id")
     id = strip(string(row[h[nid]]))
@@ -262,7 +277,10 @@ function clean_id!(row, h, house, date)
         p = name_member(house, date, w)
         if !isnothing(p)
             row[h[nid]] = p
-        elseif !(occursin(KEEP_CODE, id) && !occursin(r"^\d+$", id) && !(id in JUNK_CODES))
+        elseif occursin(KEEP_CODE, id) && !occursin(r"^\d+$", id) && !(id in JUNK_CODES) &&
+               !isna(name) && !occursin(r"(?i)^\s*unknown\s*$", name)
+            row[h[nid]] = "VISITOR"
+        else
             row[h[nid]] = "N/A"
         end
     end
