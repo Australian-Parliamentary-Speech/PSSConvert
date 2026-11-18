@@ -39,6 +39,8 @@ There is one CSV per gold day, coded to the output conventions decided on 2026-1
 
   The ids come from the members list, as the parser resolves the printed name. Each is in `../gold_standard_v2_notes/conventions_1511.csv`.
 
+- **A source ID error** (Australian-Parliamentary-Speech/PSSConvert#208, approved by Pat 18/11/2026): on Senate 16/02/1999, the XML's `<continue>` tag after Senator Boswell's interjection names Senator George Campbell but carries Boswell's id `YE4`, and v1 and v2 had copied it. The three rows of Campbell's speech are recoded `NB5`, from the printed name. Each is in `../gold_standard_v2_notes/corrections_208.csv`.
+
 The coders' notes, their lists of suspected errors in v1, and the checks are kept with the project notes (`pipeline/notes/gold/v2/`).
 
 ## Scores
