@@ -8,10 +8,22 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
     date = something(match(r"\d{4}-\d{2}-\d{2}", basename(input_fn)), (match="N/A",)).match
     # #88: old ParlInfo codes become Handbook ids before anything reads the ids
     foreach(r -> legacy_id!(upper_id!(r, header_to_num), header_to_num), rows)
+    # #211: in 1981–1997 a collective voice ("Opposition members") inside a member's answer carries that member's
+    # talker details, often the day's only print of their party and electorate: they go to the member, not the voice
+    inherited = Dict{String,Tuple{Any,Any}}()
+    nid_col = header_to_num[Symbol("name.id")]
+    has_details = haskey(header_to_num, :electorate) && haskey(header_to_num, :party)
     for r in rows
         join_cut_name!(r, header_to_num)          # #201: a heading cut between name and content
+        id0 = string(r[nid_col])
         relink!(r, header_to_num, house, date)    # #193, #199: an id for another member than the one named
         clean_id!(r, header_to_num, house, date)  # #200: ids that are not Handbook ids or documented codes
+        if has_details && is_phid(id0) && string(r[nid_col]) in GENERIC_IDS
+            e, p = r[header_to_num[:electorate]], r[header_to_num[:party]]
+            k = get(inherited, id0, ("N/A", "N/A"))
+            inherited[id0] = (isna(string(k[1])) ? e : k[1], isna(string(k[2])) ? p : k[2])
+            r[header_to_num[:electorate]], r[header_to_num[:party]] = "N/A", "N/A"
+        end
     end
     heads = day_heads(rows, header_to_num, house, date)
     dids = day_ids(rows, header_to_num)
@@ -127,6 +139,10 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             id = string(piece[header_to_num[Symbol("name.id")]])
             (isna(id) || id in GENERIC_IDS) && continue
             e, p = piece[header_to_num[:electorate]], piece[header_to_num[:party]]
+            k = get(known, id, ("N/A", "N/A"))
+            known[id] = (isna(string(k[1])) ? e : k[1], isna(string(k[2])) ? p : k[2])
+        end
+        for (id, (e, p)) in inherited
             k = get(known, id, ("N/A", "N/A"))
             known[id] = (isna(string(k[1])) ? e : k[1], isna(string(k[2])) ? p : k[2])
         end
