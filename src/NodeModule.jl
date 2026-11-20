@@ -369,7 +369,12 @@ function get_talker_from_parent(node::Node, parent_node::Node)
         end
 
     end
-
+    # #219: the SGML conversion (1981-1997) gives the page as an attribute of the speech, question or answer element
+    # (`<speech … page="463">`), above the talk.start the talker is in: the nearest one is the page the turn starts on
+    if get(node.headers_dict, "page.no", "N/A") == "N/A"
+        pg = findfirst_in_subsoup(parent_node.path, "/ancestor-or-self::*[@page][1]/@page", soup)
+        !isnothing(pg) && !isempty(strip(pg.content)) && (node.headers_dict["page.no"] = strip(pg.content))
+    end
 end
 
 """

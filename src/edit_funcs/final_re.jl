@@ -33,6 +33,12 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
         turn, last_key, prev_wa, doc, tabler, presenter, notice, notice_last = 0, nothing, nothing, nothing, nothing, nothing, nothing, ""
         built = Vector{Vector{Any}}()
         for row in rows
+            # #218: ParlInfo's paragraph style name taken as the speaker's name ("GeneralIInterjecting", 2021-26): the
+            # name is in the text ("Mr Jones interject ing—"), and the id is right
+            if occursin(STYLE_NAME, string(row[header_to_num[:name]]))
+                m = match(TEXT_NAME, string(row[header_to_num[:content]]))
+                row[header_to_num[:name]] = isnothing(m) ? "N/A" : String(m.captures[1])
+            end
             # #139: a heading, salutation or link taken as the speaker's name is no name
             name_ = row[header_to_num[:name]]
             if !isna(name_) && isna(row[header_to_num[Symbol("name.id")]]) && !looks_like_speaker(name_)
@@ -132,6 +138,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             end
         end
         built = day_rules!(built, header_to_num, date)
+        id_corrections!(built, header_to_num, house, date)
         # #187: from 2011 ParlInfo gives party and electorate only in a speech's opening talker, so later paragraphs
         # had N/A. A member's party and electorate are the same all day: take them from the member's other rows.
         known = Dict{String,Tuple{Any,Any}}()
@@ -162,6 +169,10 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
                 piece[header_to_num[:non_speech_flag]] = 1
                 ptype = isflag(piece, header_to_num, :petition_flag) ? "petition" : "motion"
             end
+            # #218: a row has one type: an interjection that quotes is an interjection (House 08/02/2016, Dreyfus)
+            if isflag(piece, header_to_num, :interjection_flag) && isflag(piece, header_to_num, :quote_flag)
+                piece[header_to_num[:quote_flag]] = 0
+            end
             key = turn_key(piece,header_to_num)
             new_turn = !isnothing(key) && key != last_key
             if new_turn
@@ -186,6 +197,50 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
         end
     end
 end
+
+const ID_CORRECTIONS = Ref{Union{Nothing,Dict{NTuple{4,String},NTuple{3,String}}}}(nothing)
+
+"#214: (chamber, date, printed name, source id) => (kind, corrected id, corrected name), from data/id_corrections.csv"
+function id_corrections()
+    if isnothing(ID_CORRECTIONS[])
+        ID_CORRECTIONS[] = Dict((r.chamber, r.date, r.name, r.source_id) => (r.kind, r.corrected_id, r.corrected_name)
+                                for r in CSV.File(joinpath(DATA_DIR, "id_corrections.csv"); types=String))
+    end
+    return ID_CORRECTIONS[]
+end
+
+"""#214: the reviewed speaker corrections, each checked against the source (data/id_corrections.csv). `relink`: the
+source gave a similar name's id; the row takes the member who spoke, with that member's name. `quote`: words from
+another occasion (earlier Hansard, the Convention debates, evidence) that ParlInfo marked up as a talker: a quote by
+the member reading it out, keeping the printed name of the person quoted. `chair`: the Chair's words, 10000 with the
+presiding officer. The printed party and electorate were the wrong person's, so the member's own fill them (#187)."""
+function id_corrections!(built, h, house, date)
+    nid = Symbol("name.id")
+    for x in built
+        row = x[1]
+        c = get(id_corrections(), (house, date, string(row[h[:name]]), string(row[h[nid]])), nothing)
+        isnothing(c) && continue
+        kind, id, name = c
+        for col in (:party, :electorate)
+            haskey(h, col) && (row[h[col]] = "N/A")
+        end
+        if kind == "quote"
+            set_type!(row, h, :quote_flag)
+            row[h[nid]] = id
+            x[2], x[3] = "N/A", "N/A"
+        elseif kind == "chair"
+            row[h[nid]] = "10000"
+            x[2] = id
+        else
+            row[h[nid]] = id
+            row[h[:name]] = name
+        end
+    end
+    return built
+end
+
+const STYLE_NAME =r"^General\s*I*\s*Interjecting$"
+const TEXT_NAME = r"^\s*((?:Mr|Mrs|Ms|Dr|Senator)\s+(?:Mc|Mac|O'|O’|D')?[A-Z][\w'’\-]+)"
 
 function final_add_from_Speaker(row,header_to_num)
     Speaker = row[header_to_num[:Speaker]] 

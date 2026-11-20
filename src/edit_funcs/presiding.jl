@@ -125,7 +125,30 @@ function presiding_terms()
     return TERMS[]
 end
 
-in_term(t, date) = t[5] <= date <= t[6]
+const SUCCESSIONS = Ref{Union{Nothing,Dict{Tuple{String,String,String},Set{String}}}}(nothing)
+
+"(chamber, office, day) => the holders whose term starts that day"
+function successions()
+    if isnothing(SUCCESSIONS[])
+        d = Dict{Tuple{String,String,String},Set{String}}()
+        for t in presiding_terms()
+            push!(get!(d, (t[1], t[2], t[5]), Set{String}()), t[3])
+        end
+        SUCCESSIONS[] = d
+    end
+    return SUCCESSIONS[]
+end
+
+"""A term covers `date`. #216: on the day one holder's term ends and another's starts, the office is the incoming
+holder's (ausPH ends Parry's term as President and starts Ryan's on 13/11/2017, the day Ryan was elected)."""
+function in_term(t, date)
+    t[5] <= date <= t[6] || return false
+    if date == t[6] && date != t[5]
+        s = get(successions(), (t[1], t[2], date), nothing)
+        !isnothing(s) && any(p -> p != t[3], s) && return false
+    end
+    return true
+end
 
 "#186: the one holder on `date` of the office a clean title stands for, or nothing"
 function title_holder(house, title, date)

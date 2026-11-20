@@ -14,6 +14,29 @@ the row, so existing columns keep their positions.
 | `turn_no` | Counts turns: increases by one when the speaker changes. Non-speech rows keep the number of the turn before them. `0` before the first speaker. | Australian-Parliamentary-Speech/PSSConvert#97 |
 
 ### Changed meanings and flags
+- A reviewed table of speaker corrections, `src/data/id_corrections.csv`, each checked against the source XML, from the
+  downstream team's ambiguous-records list (Australian-Parliamentary-Speech/PSSConvert#214):
+  - **`relink`:** a source id for a similar name is replaced by the member who spoke, and `name` is set to that member;
+    for example "BEAZLEY, Kim" in 1940–45 is John Beasley, and "DUNCAN-HUGHES, John" in the 1930–31 Senate is Walter
+    Duncan.
+  - **`quote`:** words from another occasion that ParlInfo marked up as a talker (earlier Hansard, the Convention
+    debates, evidence) become a quote (`quote_flag = 1`) with the reader's id; `name` keeps the person quoted.
+  - **`chair`:** the Chair's words, `10000` with the presiding officer in `presiding_phid`.
+- A row whose id is relinked to another member (#193, #199, #205) no longer keeps the party and electorate printed in
+  the talker block it came in, which in 1981–1997 was often the speech it interrupts ("Mr Sinclair interjecting--"
+  inside Hand's speech had ALP, Melbourne); the member's own party and electorate fill it (#187)
+  (Australian-Parliamentary-Speech/PSSConvert#215).
+- On a day when one presiding officer's term ends and another's starts, `presiding_phid` is the incoming holder (Senate
+  13/11/2017: Ryan, not Parry) (Australian-Parliamentary-Speech/PSSConvert#216).
+- Senate petitions from 2011 that end with their presenter ("by Senator Johnston (from 8 citizens).") carry that
+  senator's id (Australian-Parliamentary-Speech/PSSConvert#217).
+- ParlInfo's paragraph style name is no longer taken as a speaker's name: "GeneralIInterjecting" becomes the name in
+  the text ("Mr Jones"). An interjection that quotes is an interjection, not also a quote
+  (Australian-Parliamentary-Speech/PSSConvert#218).
+- A printed name with stray OCR punctuation ("Mr. (Poynton", "Sir JOHN (FORREST", "Mr/Griffiths", "Mr Abbott—") is
+  read for its surname, so the row takes the member's id (Australian-Parliamentary-Speech/PSSConvert#87).
+- 1981–1997: `page.no` comes from the `page` attribute of the speech, question or answer element in the SGML
+  conversion, where the talker gives none (Australian-Parliamentary-Speech/PSSConvert#219).
 - Petition rows (`petition_flag = 1`) and motions moved without a speech (`motionnospeech_flag = 1`) are now
   `non_speech_flag = 1`, with `nonspeech_type` `petition` or `motion`; both keep their flag and the member's id. Before,
   they were `non_speech_flag = 0`, so filtering on `non_speech_flag` counted 177,582 of them as speech

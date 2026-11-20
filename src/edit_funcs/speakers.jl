@@ -20,6 +20,8 @@ end
 function name_words(name)
     # #87: a curly apostrophe ("O’Neil") is the members list's straight one
     s = replace(string(name), '’' => '\'')
+    # #87: an opening bracket with no closing one is OCR noise before the surname ("Mr. (Poynton", "Sir JOHN (FORREST")
+    s = replace(s, r"\((?![^)]*\))" => " ", r"/" => " ")
     s = replace(s, r"\([^)]*\)?" => " ", r"\[[^\]]*\]?" => " ", r"[\"“”]" => " ")
     # titles run onto the next word in the OCR text: "SenatorSir", "Mr.Isaacs", "SirWilliam"
     for _ in 1:2
@@ -29,7 +31,7 @@ function name_words(name)
         a, b = split(s, ","; limit=2)
         s = b * " " * a
     end
-    toks = [strip(t, ['\'', '’', '-']) for t in split(s, r"[\s.,:;]+")]
+    toks = [strip(t, ['\'', '’', '-', '—', '–']) for t in split(s, r"[\s.,:;]+")]
     return [t for t in toks if length(t) > 1 && !(lowercase(t) in ID_TITLES) && occursin(r"^[A-Za-z'’\-]+$", t)]
 end
 
@@ -211,6 +213,21 @@ that do not give exactly one sitting member.
 #199: so does a row whose id is a sitting member but whose printed surname is someone else's ("FRASER, Malcolm"
 carrying Holt's id; an interjection by Mr Hewson carrying the Prime Minister's)."""
 function relink!(row, h, house, date)
+    nid = Symbol("name.id")
+    before = string(row[h[nid]])
+    relink_id!(row, h, house, date)
+    # #215: a relinked row's printed party and electorate are those of the talker block it came in, often the speech
+    # it interrupts ("Mr Sinclair interjecting--" inside Hand's speech): the member's own come from their other rows
+    after = string(row[h[nid]])
+    if after != before && is_phid(after)
+        for col in (:party, :electorate)
+            haskey(h, col) && (row[h[col]] = "N/A")
+        end
+    end
+    return row
+end
+
+function relink_id!(row, h, house, date)
     nid = Symbol("name.id")
     id = string(row[h[nid]])
     is_phid(id) || return row
