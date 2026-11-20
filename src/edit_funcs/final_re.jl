@@ -13,10 +13,15 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
     inherited = Dict{String,Tuple{Any,Any}}()
     nid_col = header_to_num[Symbol("name.id")]
     has_details = haskey(header_to_num, :electorate) && haskey(header_to_num, :party)
-    for r in rows
+    relinked = Dict{Int,String}()
+    for (i, r) in enumerate(rows)
         join_cut_name!(r, header_to_num)          # #201: a heading cut between name and content
         id0 = string(r[nid_col])
         relink!(r, header_to_num, house, date)    # #193, #199: an id for another member than the one named
+        id1 = string(r[nid_col])
+        if has_details && is_phid(id0) && is_phid(id1) && id1 != id0
+            relinked[i] = id0
+        end
         clean_id!(r, header_to_num, house, date)  # #200: ids that are not Handbook ids or documented codes
         if has_details && is_phid(id0) && string(r[nid_col]) in GENERIC_IDS
             e, p = r[header_to_num[:electorate]], r[header_to_num[:party]]
@@ -25,6 +30,7 @@ function final_re(input_fn,output_fn,::Type{<:AbstractEditPhase})
             r[header_to_num[:electorate]], r[header_to_num[:party]] = "N/A", "N/A"
         end
     end
+    relinked_details!(rows, header_to_num, relinked)   # #215
     heads = day_heads(rows, header_to_num, house, date)
     dids = day_ids(rows, header_to_num)
 

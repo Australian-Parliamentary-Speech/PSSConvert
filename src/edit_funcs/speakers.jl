@@ -213,18 +213,32 @@ that do not give exactly one sitting member.
 #199: so does a row whose id is a sitting member but whose printed surname is someone else's ("FRASER, Malcolm"
 carrying Holt's id; an interjection by Mr Hewson carrying the Prime Minister's)."""
 function relink!(row, h, house, date)
-    nid = Symbol("name.id")
-    before = string(row[h[nid]])
-    relink_id!(row, h, house, date)
-    # #215: a relinked row's printed party and electorate are those of the talker block it came in, often the speech
-    # it interrupts ("Mr Sinclair interjecting--" inside Hand's speech): the member's own come from their other rows
-    after = string(row[h[nid]])
-    if after != before && is_phid(after)
-        for col in (:party, :electorate)
-            haskey(h, col) && (row[h[col]] = "N/A")
-        end
+    # #215: a relinked row may carry the printed party and electorate of the talker block it came in, often the speech
+    # it interrupts ("Mr Sinclair interjecting--" inside Hand's speech): final_re clears them when they are that
+    # member's (`relinked_details!`), and the member's own come from their other rows
+    return relink_id!(row, h, house, date)
+end
+
+"""#215: rows relinked from `old` to another member keep their printed party and electorate unless these are the
+ones `old`'s own rows that day carry, in which case they were the interrupted speaker's and become N/A. `relinked`
+maps a row's index in `rows` to the id it had before relinking."""
+function relinked_details!(rows, h, relinked)
+    (isempty(relinked) || !haskey(h, :electorate) || !haskey(h, :party)) && return rows
+    nid = h[Symbol("name.id")]
+    own = Dict{String,Set{Tuple{String,String}}}()
+    for (i, r) in enumerate(rows)
+        haskey(relinked, i) && continue
+        id = String(string(r[nid])); e, p = String(string(r[h[:electorate]])), String(string(r[h[:party]]))
+        (is_phid(id) && !(isna(e) && isna(p))) || continue
+        push!(get!(own, id, Set{Tuple{String,String}}()), (e, p))
     end
-    return row
+    for (i, old) in relinked
+        r = rows[i]
+        e, p = String(string(r[h[:electorate]])), String(string(r[h[:party]]))
+        (isna(e) && isna(p)) && continue
+        (e, p) in get(own, old, Set{Tuple{String,String}}()) && ((r[h[:electorate]], r[h[:party]]) = ("N/A", "N/A"))
+    end
+    return rows
 end
 
 function relink_id!(row, h, house, date)

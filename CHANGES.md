@@ -23,9 +23,10 @@ the row, so existing columns keep their positions.
     debates, evidence) become a quote (`quote_flag = 1`) with the reader's id; `name` keeps the person quoted.
   - **`chair`:** the Chair's words, `10000` with the presiding officer in `presiding_phid`.
 - A row whose id is relinked to another member (#193, #199, #205) no longer keeps the party and electorate printed in
-  the talker block it came in, which in 1981–1997 was often the speech it interrupts ("Mr Sinclair interjecting--"
-  inside Hand's speech had ALP, Melbourne); the member's own party and electorate fill it (#187)
-  (Australian-Parliamentary-Speech/PSSConvert#215).
+  the talker block it came in when these are the ones the member it was linked to carries that day: in 1981–1997 this
+  was often the speech it interrupts ("Mr Sinclair interjecting--" inside Hand's speech had ALP, Melbourne). The
+  member's own party and electorate fill it (#187). Printed details that are not the other member's are kept
+  (Kent Hughes, LP, Kew, 1950–53) (Australian-Parliamentary-Speech/PSSConvert#215).
 - On a day when one presiding officer's term ends and another's starts, `presiding_phid` is the incoming holder (Senate
   13/11/2017: Ryan, not Parry) (Australian-Parliamentary-Speech/PSSConvert#216).
 - Senate petitions from 2011 that end with their presenter ("by Senator Johnston (from 8 citizens).") carry that
