@@ -176,6 +176,12 @@ function presiding_id!(row, h, presiding, house="house", date="")
             presiding = p
         elseif is_phid(nid) && any(t -> t[1] == house && t[3] == nid && in_term(t, date), presiding_terms())
             presiding = nid
+        else
+            # #216: the source's id is no presiding officer on the day (Parry's on 13/11/2017, when Ryan presided):
+            # a clean title takes the office's holder
+            title = clean_title(name)
+            p = isnothing(title) ? nothing : title_holder(house, title, date)
+            !isnothing(p) && (presiding = p)
         end
     end
     row[h[Symbol("name.id")]] = "10000"
@@ -728,7 +734,9 @@ const CLERK = r"(?i)\bclerk\b"
 const LODGED = r"(?i)lodged\s+for\s+presentation|petitions?\s+(?:has|have)\s+been\s+lodged"
 
 # the line naming who presented a petition: "by Sir John Cramer, Mr Fulton and Mr Turner.", "by MrDrury, Dr Gun …"
-const PETITION_BY = r"\bby\s+((?:Sir\s+[A-Z][\w'’\-]+\s+[A-Z][\w'’\-]+)|(?:Mr|Mrs|Ms|Miss|Dr|Senator)\.?\s*(?:[A-Z]\.\s*)*[A-Z][\w'’\-]+(?:\s+[A-Z][\w'’\-]+)?)"
+const SENATE_PETITION_BY = r"\bby\s+Senator\s+((?:[A-Z]\.\s*)*(?:Mc|Mac|O'|O’|D')?[A-Z][\w'’\-]+(?:[\s-][A-Z][\w'’\-]+)?)\s*\(\s*from\s+[\d,]+"
+const PETITION_START = r"^\s*(?:To\s+the\s+Hono|The\s+[Pp]etition\s+of\b|[Pp]etition\s+to\s+the\s+Senate)"
+const PETITION_BY =r"\bby\s+((?:Sir\s+[A-Z][\w'’\-]+\s+[A-Z][\w'’\-]+)|(?:Mr|Mrs|Ms|Miss|Dr|Senator)\.?\s*(?:[A-Z]\.\s*)*[A-Z][\w'’\-]+(?:\s+[A-Z][\w'’\-]+)?)"
 
 """#157 (decided 15/11/2026): a petition is the words of whoever presented it. The Clerk has the fixed id 10001.
 A petition with its own presenter in the XML (see `petition_presenter`) keeps that member's id. A petition in the
@@ -739,6 +747,15 @@ function clerk_petitions!(rows, h, date)
     house = CURRENT_HOUSE[]
     dids = day_ids([x[1] for x in rows], h)
     lodged, ltopic, pending, presenter = false, nothing, Int[], nothing
+    # #217: a Senate petition from 2011 has no talker; it ends with its presenter: "by Senator Johnston (from 8 citizens)."
+    spending = Int[]
+    function ssettle!(id, name)
+        for k in spending
+            rows[k][1][h[nid]] = id
+            isna(rows[k][1][h[:name]]) && (rows[k][1][h[:name]] = name)
+        end
+        empty!(spending)
+    end
     function settle!(id, name)
         for k in pending
             rows[k][1][h[nid]] = id
@@ -751,7 +768,22 @@ function clerk_petitions!(rows, h, date)
         t = string(r[h[:debateinfo]])
         if t != ltopic
             settle!("10001", "The Clerk")
+            empty!(spending)
             lodged, ltopic, presenter = false, t, nothing
+        end
+        if house == "senate" && isflag(r, h, :petition_flag) && isna(r[h[nid]]) && !lodged && isnothing(presenter)
+            c = string(r[h[:content]])
+            # a new petition begins: the last one printed no presenter, so it stays without one
+            occursin(PETITION_START, c) && empty!(spending)
+            push!(spending, k)
+            m = match(SENATE_PETITION_BY, c)
+            if !isnothing(m)
+                id = resolve_id("Senator " * m.captures[1], house, date, dids)
+                isnothing(id) ? empty!(spending) : ssettle!(id, "Senator " * String(m.captures[1]))
+            end
+            continue
+        elseif !isflag(r, h, :petition_flag)
+            empty!(spending)
         end
         name = string(r[h[:name]])
         content = string(r[h[:content]])
